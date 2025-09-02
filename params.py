@@ -6,12 +6,12 @@ model_name = possible_models[4]
 ollama_endpoint = "http://localhost:11434/api/generate"
 
 #States for the prompt:
-states = ["Irrelevant", "Not Sure", "Rejected", "Accepted", "Assessment Centre", "Online Test", "Interview", "Congrats you got the job!", "Job Application"]
+states = ["Irrelevant", "Not Sure", "Rejected", "Accepted", "Assessment Centre", "Online Test", "Interview", "Job Offer", "New Job Application"]
 
 #The email we want to classify:
-email_content = """Hi Barney, I want to sell you some cookies"""
+email_content = """Hi Barney, I want to sell you a potato peeler. It's the best on the market and will change your life! Best, Spud Seller. If you buy"""
 
-#Theprompt:
+#The prompt:
 prompt = f"""
 You are an expert email classifier. Your task is to classify the email content into one of the following categories. 
 The first category is for emails that are not relevant to job applications. 
