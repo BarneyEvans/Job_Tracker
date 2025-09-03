@@ -1,17 +1,35 @@
-#The local ollama model to use:
+# GENERAL PARAMS - PROBS DON'T CHANGE THESE
+FALLBACK_EMAIL_COUNT = 2
+
+# Model settings
+OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
+CLASSIFICATION_MODEL = "gemma2:4b"  # Updated from gemma3 to gemma2 for consistency
+
+# Legacy model settings (kept for backward compatibility)
 possible_models = ["gemma3:270m", "gemma3:270m-it-qat", "gemma3:1b", "gemma3:1b-it-qat", "gemma3:4b", "deepseek-r1:7b"]
 model_name = possible_models[4]
-
-#The endpoint for the local ollama server:
 ollama_endpoint = "http://localhost:11434/api/generate"
 
-#States for the prompt:
-states = ["Irrelevant", "Not Sure", "Rejected", "Accepted", "Assessment Centre", "Online Test", "Interview", "Job Offer", "New Job Application"]
+# Classification categories
+JOB_STATES = [
+    "Irrelevant",      # Not job-related
+    "Applied",         # Application confirmation
+    "Interview",       # Interview invitation/scheduling
+    "Assessment",      # Online test/assessment center
+    "Offer",          # Job offer received
+    "Rejected"        # Application rejected
+]
 
-#The email we want to classify:
-email_content = """Hi Barney, I want to sell you a potato peeler. It's the best on the market and will change your life! Best, Spud Seller."""
+# Legacy states (kept for backward compatibility)
+states = ["IRRELEVANT", "UNSURE", "REJECTED", "ASSESSMENT CENTRE", "ONLINE TEST", "INTERVIEW", "JOB OFFER", "NEW JOB APPLICATION"]
 
-#The prompt:
+# Retry settings
+MAX_CLASSIFICATION_RETRIES = 3
+CLASSIFICATION_TIMEOUT = 30  # seconds
+
+# Legacy email content and prompt (kept for backward compatibility)
+email_content = """Hi Barney, you have now been invited for an in person, all day activity of tasks to test your ability for META"""
+
 prompt = f"""
 You are an expert email classifier. Your task is to classify the email content into one of the following categories. 
 The first category is for emails that are not relevant to job applications. 
