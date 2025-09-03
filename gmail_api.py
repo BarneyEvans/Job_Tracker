@@ -83,4 +83,4 @@ def retrieve_gmails():
 # This part is just for testing our function directly
 if __name__ == '__main__':
     test = retrieve_gmails()
-    print(test["Subject"])
+    print(test)
