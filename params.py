@@ -7,6 +7,8 @@ OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 #States for the prompt:
 STATES = ["IRRELEVANT", "UNSURE", "REJECTED", "ACCEPTED", "ONLINE TEST", "INTERVIEW", "JOB OFFER", "NEW JOB APPLICATION"]
 
+EXTRACTION_STATES = ["Company Name", "Job Title", "Location", "Salary"]
+
 #The prompt:
 def generate_classification_prompt(email_s, email_b):
     prompt = f"""
@@ -28,21 +30,19 @@ def generate_classification_prompt(email_s, email_b):
 
     return prompt
 
-def generate_info_extractor_prompt(email_s, email_b):
+def generate_single_extraction_prompt(email_subject, email_body, field_to_extract):
     prompt = f"""
-    You are an expert information extractor. From the email below, extract the following fields: Company, JobTitle, Location, Salary.
+    You are a highly specialized information extraction tool. Your single task is to extract the "{field_to_extract}" from the email content below.
 
-    Rules:
-    - Respond with each field on a new line, in "Key: Value" format.
-    - If a field is not mentioned in the email, use "UNKNOWN" as its value.
-    - Do not add any other text, explanation, or conversation.
+    Follow these rules precisely:
+    1.  Only respond with the extracted information.
+    2.  If you cannot find the "{field_to_extract}", you MUST respond with the single word "UNKNOWN".
+    3.  Do not add any explanation, conversation, or extra text.
 
     --- EMAIL CONTENT ---
-    Subject: {email_s}
-    Body: {email_b}
+    Subject: {email_subject}
+    Body: {email_body}
     ---
-
-    EXTRACTION:
     """
     return prompt
 
