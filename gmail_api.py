@@ -59,6 +59,12 @@ def get_body(message):
             return body.decode("utf-8")
     return "No Content"
 
+def get_sender_email(message):
+    for info in message["payload"]["headers"]:
+        if info["name"] == "From":
+            return info["value"]
+    return "No Sender Email"   
+
 def get_content(ids, current_service):
     # A dictionary of ids, each containing subject and content
     email_content = {}
@@ -68,9 +74,11 @@ def get_content(ids, current_service):
         #print("-" * 100)
         subject_content = get_subject(current_message)
         body_content = get_body(current_message)
+        sender_email = get_sender_email(current_message)
         email_content[id] = {}
         email_content[id]["Subject"] = subject_content
         email_content[id]["Content"] = body_content
+        email_content[id]["Sender_Email"] = sender_email
     return email_content
 
 def retrieve_gmails():

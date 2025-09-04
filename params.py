@@ -7,7 +7,7 @@ OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 #States for the prompt:
 STATES = ["IRRELEVANT", "UNSURE", "REJECTED", "ACCEPTED", "ONLINE TEST", "INTERVIEW", "JOB OFFER", "NEW JOB APPLICATION"]
 
-EXTRACTION_STATES = ["Company Name", "Job Title", "Location", "Salary"]
+EXTRACTION_STATES = ["Company Name", "Job Title", "Location", "Salary", "Required Skills"]
 
 #The prompt:
 def generate_classification_prompt(email_s, email_b):
