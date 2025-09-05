@@ -2,8 +2,19 @@ import requests
 from params import MODEL_NAME, OLLAMA_ENDPOINT, EXTRACTION_STATES, generate_classification_prompt, generate_single_extraction_prompt
 from gmail_api import retrieve_gmails
 
+
+def get_result(data_ting):
+    classification_response = requests.post(OLLAMA_ENDPOINT, json=data_ting)
+    response = classification_response.json()['response']
+    result = response.split("</think>")[-1]
+    return result
+
+
+
 def information_extraction():
     emails = retrieve_gmails()
+    useful_emails = {}
+
     for email in emails:
         email_subject = emails[email]["Subject"]
         email_content = emails[email]["Content"]
@@ -11,30 +22,25 @@ def information_extraction():
 
         #First Check for classification
         data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
-        classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
-        unfiltered_result_1 = classification_response.json()['response']
-        classification_result = unfiltered_result_1.split("</think>")[-1]
-        emails[email]["Classification"] = classification_result.strip()
+        emails[email]["Classification"] = get_result(data).strip()
 
-        #print(classification_result)
-
+        if "irrelevant" not in emails[email]["Classification"].lower():
+            useful_emails[email] = emails[email]
+    
+    for email in useful_emails:
+        email_subject = emails[email]["Subject"]
+        email_content = emails[email]["Content"]
         #Second Check for general information extraction
-        if "irrelevant" not in classification_result.lower() and "unsure" not in classification_result.lower():
-            for state in EXTRACTION_STATES:
-                prompt = generate_single_extraction_prompt(email_subject, email_content, state)
-                data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
-                general_info_response = requests.post(OLLAMA_ENDPOINT, json=data)
-                unfiltered_result_2 = general_info_response.json()['response']
-                general_info_result = unfiltered_result_2.split("</think>")[-1]
-                emails[email][state] = general_info_result
-        else:
-            emails[email]["Extracted_Info"] = "None"
-        
-    return emails
+        for state in EXTRACTION_STATES:
+            prompt = generate_single_extraction_prompt(email_subject, email_content, state)
+            data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
+            useful_emails[email][state] = get_result(data).strip()
+
+    return useful_emails
 
 if __name__ == '__main__':
     processed_emails = information_extraction()
-    print(processed_emails)
+    # print(processed_emails)
 
     print("\n--- PROCESSING COMPLETE ---")
     print(f"Found and processed {len(processed_emails)} new emails.\n")
