@@ -67,7 +67,7 @@ def update_list():
     for id in emails:
         value = emails[id]["Duplicate_Check"]
         id_list.append(id)
-        if value.lower == "none":
+        if value.lower() == "none":
             df.loc[len(df)] = [emails[id]["Company Name"] ,emails[id]["Job Title"],emails[id]["Location"],emails[id]["Salary"],emails[id]["Required Skills"], emails[id]["Classification"], emails[id]["Sender_Email"]]
         else:
             for field in copy:
