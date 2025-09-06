@@ -10,7 +10,7 @@ def load_job_tracker(file_path='job_tracker.csv'):
         return df
     except FileNotFoundError:
         copy = EXTRACTION_STATES.copy()
-        copy.append("Status")
+        copy.append("Classification")
         copy.append("Sender_Email")
         df = pd.DataFrame(columns=copy)
         df.to_csv(file_path, index=False)
@@ -18,7 +18,7 @@ def load_job_tracker(file_path='job_tracker.csv'):
     
 
 def find_candidate_jobs(all_jobs_df):
-    candidate_jobs = all_jobs_df[all_jobs_df['Status'].str.upper() != 'REJECTED']
+    candidate_jobs = all_jobs_df[all_jobs_df['Classification'].str.upper() != 'REJECTED']
     return candidate_jobs
 
 def check_current_jobs():
@@ -61,14 +61,14 @@ def update_list():
     emails = check_current_jobs()
     df = load_job_tracker()
     copy = EXTRACTION_STATES.copy()
-    copy.append("Status")
+    copy.append("Classification")
     copy.append("Sender_Email")
     id_list = []
     for id in emails:
         value = emails[id]["Duplicate_Check"]
         id_list.append(id)
-        if value == "None":
-            df.loc[len(df)] = [emails[id]["Company Name"] ,emails[id]["Job Title"],emails[id]["Location"],emails[id]["Salary"],emails[id]["Required Skills"], emails[id]["Status"], emails[id]["Sender_Email"]]
+        if value.lower == "none":
+            df.loc[len(df)] = [emails[id]["Company Name"] ,emails[id]["Job Title"],emails[id]["Location"],emails[id]["Salary"],emails[id]["Required Skills"], emails[id]["Classification"], emails[id]["Sender_Email"]]
         else:
             for field in copy:
                 if emails[id].get(field, "UNKNOWN") != "UNKNOWN":
