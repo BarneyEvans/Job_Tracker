@@ -14,7 +14,7 @@ def generate_classification_prompt(email_s, email_b):
     prompt = f"""
     You are an expert email classifier. Your task is to classify the email content into one of the following categories. 
     The first category is for emails that are not relevant to job applications. 
-    The second category is for emails that are job related but it's unclear what stage of the application process they pertain to.
+    The second category (UNSURE) is for emails that are job related but it's unclear what stage of the application process they pertain to.
     The other categories are for various stages of a job application process.
 
     Valid categories: {STATES}
@@ -47,4 +47,23 @@ def generate_single_extraction_prompt(email_subject, email_body, field_to_extrac
     return prompt
 
 
-    
+def generate_checking_prompt(new_job_details, existing_jobs_list_as_string):
+    prompt = f"""
+    You are a highly intelligent duplicate detection system for a job application tracker. Your task is to determine if the "New Application" below is a duplicate of any of the "Existing Applications".
+
+    --- RULES ---
+    1.  A duplicate means it is for the same role at the same company. The job title can be a variation (e.g., "Software Engineer" matches "SWE" or "Junior Software Engineer").
+    2.  If you find a clear duplicate, you MUST respond with only the Row Number of the matching application in the format "[Number]".
+    3.  If there are no clear duplicates, you MUST respond with the single word "NONE".
+    4.  Do not provide any explanation, reasoning, or extra text. Your entire response must be either "[Number]" or "NONE".
+
+    --- EXISTING APPLICATIONS ---
+    {existing_jobs_list_as_string}
+
+    --- NEW APPLICATION ---
+    {new_job_details}
+
+    --- ANALYSIS ---
+    """
+    return prompt
+

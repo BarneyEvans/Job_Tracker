@@ -3,8 +3,9 @@ from params import MODEL_NAME, OLLAMA_ENDPOINT, EXTRACTION_STATES, generate_clas
 from gmail_api import retrieve_gmails
 
 
-def get_result(data_ting):
-    classification_response = requests.post(OLLAMA_ENDPOINT, json=data_ting)
+def get_result(prompt):
+    data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
+    classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
     response = classification_response.json()['response']
     result = response.split("</think>")[-1]
     return result
@@ -21,8 +22,8 @@ def information_extraction():
         prompt = generate_classification_prompt(email_subject, email_content)
 
         #First Check for classification
-        data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
-        emails[email]["Classification"] = get_result(data).strip()
+        
+        emails[email]["Classification"] = get_result(prompt).strip()
 
         if "irrelevant" not in emails[email]["Classification"].lower():
             useful_emails[email] = emails[email]
@@ -33,8 +34,7 @@ def information_extraction():
         #Second Check for general information extraction
         for state in EXTRACTION_STATES:
             prompt = generate_single_extraction_prompt(email_subject, email_content, state)
-            data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
-            useful_emails[email][state] = get_result(data).strip()
+            useful_emails[email][state] = get_result(prompt).strip()
 
     return useful_emails
 
