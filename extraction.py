@@ -4,7 +4,8 @@ from gmail_api import retrieve_gmails
 
 
 def get_result(prompt):
-    data = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
+    options = {"temperature": 0}
+    data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}
     classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
     response = classification_response.json()['response']
     result = response.split("</think>")[-1]
