@@ -87,4 +87,6 @@ def retrieve_gmails():
 # This part is just for testing our function directly
 if __name__ == '__main__':
     test = retrieve_gmails()
-    print(test)
+    with open("emails.json", "w", encoding="utf-8") as f:
+        json.dump(test, f, indent=4, ensure_ascii=False)
+    print("Saved to emails.json")
