@@ -38,9 +38,6 @@ def read_and_write_to_json(current_service):
     new_id_set = set([msg['id'] for msg in all_messages_info['messages']])
     processed_id_set = set(checkpoint_data['processed_ids'])
     unprocessed_ids = list(new_id_set - processed_id_set)
-
-    with open("checkpoint.json", "w") as f:
-        json.dump(checkpoint_data, f)
     
     return unprocessed_ids
 
