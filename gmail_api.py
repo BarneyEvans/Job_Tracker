@@ -61,6 +61,12 @@ def get_sender_email(message):
             return info["value"]
     return "No Sender Email"   
 
+def get_date(message):
+    for info in message["payload"]["headers"]:
+        if info["name"] == "Date":
+            return info["value"]
+    return "No Date"
+
 def get_content(ids, current_service):
     # A dictionary of ids, each containing subject and content
     email_content = {}
@@ -68,13 +74,11 @@ def get_content(ids, current_service):
         current_message = current_service.users().messages().get(userId="me", id=id).execute()
         #print(current_message)
         #print("-" * 100)
-        subject_content = get_subject(current_message)
-        body_content = get_body(current_message)
-        sender_email = get_sender_email(current_message)
         email_content[id] = {}
-        email_content[id]["Subject"] = subject_content
-        email_content[id]["Content"] = body_content
-        email_content[id]["Sender_Email"] = sender_email
+        email_content[id]["Subject"] = get_subject(current_message)
+        email_content[id]["Content"] = get_body(current_message)
+        email_content[id]["Sender_Email"] = get_sender_email(current_message)
+        email_content[id]["Date"] = get_date(current_message)
     return email_content
 
 def retrieve_gmails():
