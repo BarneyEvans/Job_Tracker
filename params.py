@@ -87,10 +87,12 @@ def data_extraction_prompt(email_subject, email_body):
     ---
 
     Please return your response as a json in the following format:
-    output = {{
+    {{
         "company": company_name,
         "job_title": job_name,
         "stage": status,
         "position": job_position
     }}
+
+    Please think through step by step.
     """

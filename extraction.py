@@ -1,5 +1,12 @@
 import requests
-from params import MODEL_NAME, OLLAMA_ENDPOINT, EXTRACTION_STATES, generate_classification_prompt, generate_single_extraction_prompt
+from params import (
+    MODEL_NAME, 
+    OLLAMA_ENDPOINT, 
+    EXTRACTION_STATES, 
+    generate_classification_prompt, 
+    generate_single_extraction_prompt, 
+    data_extraction_prompt
+    )
 from gmail_api import retrieve_gmails
 
 
@@ -38,6 +45,31 @@ def information_extraction():
             useful_emails[email][state] = get_result(prompt).strip()
 
     return useful_emails
+
+def parse_email(prompt):
+    options = {"temperature": 0}
+    data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}
+    classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
+    response = classification_response.json()['response']
+    result = response.split("</think>")[-1]
+    return result
+
+def extract_information():
+    emails = retrieve_gmails()
+    necessary_data = []
+
+    for email in emails:
+        email_subject = emails[email]["Subject"]
+        email_content = emails[email]["Content"]
+        prompt = data_extraction_prompt(email_subject, email_content)
+        out_json = parse_email(prompt)
+        parsed_email = eval(out_json)
+        if parsed_email["stage"].upper() != "IRRELEVANT":
+            if parsed_email["stage"].upper() != "UNSURE":
+                necessary_data.append(parsed_email)
+    return necessary_data
+
+
 
 if __name__ == '__main__':
     processed_emails = information_extraction()

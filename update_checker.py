@@ -1,4 +1,7 @@
-from extraction import information_extraction
+from extraction import (
+    information_extraction,
+    extract_information
+    )
 from params import EXTRACTION_STATES, generate_checking_prompt
 from extraction import get_result
 import pandas as pd
