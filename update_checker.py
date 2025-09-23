@@ -32,6 +32,8 @@ def check_current_jobs():
         job_title = emails[id].get("Job Title", "UNKNOWN").strip()
         current_job_details = f"Company: {company}, Sender_Email: {address}, Job Title: {job_title}"
         mega_string = f""
+        if candidate_jobs.empty:
+            mega_string = "No existing jobs"
         for original_index in candidate_jobs.index:
             job_row = candidate_jobs.loc[original_index]
             existing_company = job_row['Company Name']
@@ -66,13 +68,14 @@ def update_list():
     id_list = []
     for id in emails:
         value = emails[id]["Duplicate_Check"]
+        print(value)
         id_list.append(id)
         if value.lower() == "none":
             df.loc[len(df)] = [emails[id]["Company Name"] ,emails[id]["Job Title"],emails[id]["Location"],emails[id]["Salary"],emails[id]["Required Skills"], emails[id]["Classification"], emails[id]["Sender_Email"]]
         else:
             for field in copy:
                 if emails[id].get(field, "UNKNOWN") != "UNKNOWN":
-                    df.loc[int(value), field] = emails[id][field]
+                    df.loc[int(value.strip("[]")), field] = emails[id][field]
     df.to_csv('job_tracker.csv', index=False)
     update_processed_ids(id_list)
         
