@@ -5,7 +5,7 @@ MODEL_NAME = POSSIBLE_MODELS[5]
 OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 
 #States for the prompt:
-STAGES = ["action_required", "applied", "assessment", "interview"]
+STAGES = ["unsure","action_required", "applied", "assessment", "interview"]
 
 SUBSTATES = ["irrelevant", "unsure", "rejected", "accepted", "completed", "action_required"]
 
