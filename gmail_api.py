@@ -48,11 +48,29 @@ def get_subject(message):
     return "No Subject"
 
 def get_body(message):
+    # with open("text.json", "w", encoding="utf-8") as f:
+    #     json.dump(message["payload"]["parts"], f, indent=4, ensure_ascii=False)
+    # quit()
     for info in message["payload"]["parts"]:
         if info["mimeType"] == "text/plain":
             data = info["body"]["data"]
             body = base64.urlsafe_b64decode(data)
             return body.decode("utf-8")
+        if info["mimeType"] == "text/html":
+            data = info["body"]["data"]
+            html = base64.urlsafe_b64decode(data).decode("utf-8")
+            return html
+        if info["mimeType"] == "multipart/alternative":
+            for part in info["parts"]:
+                if part["mimeType"] == "text/plain":
+                    data = part["body"]["data"]
+                    body = base64.urlsafe_b64decode(data)
+                    return body.decode("utf-8")
+                if part["mimeType"] == "text/html":
+                    data = part["body"]["data"]
+                    html = base64.urlsafe_b64decode(data).decode("utf-8")
+                    return html
+
     return "No Content"
 
 def get_sender_email(message):
@@ -72,7 +90,6 @@ def get_content(ids, current_service):
     email_content = {}
     for id in ids:
         current_message = current_service.users().messages().get(userId="me", id=id).execute()
-        #print(current_message)
         #print("-" * 100)
         email_content[id] = {}
         email_content[id]["Subject"] = get_subject(current_message)
