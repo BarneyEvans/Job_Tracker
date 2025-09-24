@@ -96,3 +96,4 @@ def data_extraction_prompt(email_subject, email_body):
 
     Please think through step by step.
     """
+    return prompt
