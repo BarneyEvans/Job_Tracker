@@ -5,9 +5,9 @@ MODEL_NAME = POSSIBLE_MODELS[5]
 OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 
 #States for the prompt:
-STAGES = ["unsure","action_required", "applied", "assessment", "interview"]
+STAGES = ["irrelevant", "unsure","action_required", "applied", "assessment", "interview"]
 
-SUBSTATES = ["irrelevant", "unsure", "rejected", "accepted", "completed", "action_required"]
+SUBSTATES = ["rejected", "accepted", "completed", "action_required", "applied", "upcoming", "deadline"]
 
 EXTRACTION_STATES = ["Company Name", "Job Title", "Location", "Salary", "Required Skills"]
 
@@ -79,9 +79,24 @@ def data_extraction_prompt(email_subject, email_body):
 
     company_name: This is the name of the company that the email is coming from. (e.g. Samsung, Meta, BlackRock)
     job_name: This is the name of the job that has been applied for and the email is referencing. (e.g. Software Engineer, Data Scientist, Quant Analyst)
-    status: This is the stage of the job application. Please select the most suitable item from this list {STAGES}. (e.g. "Please schedule a meeting time" is "action_required")
+    status: This is the stage of the job application. Please select the most suitable item from this list {STAGES}. (e.g. "Please schedule a meeting time" is "action_required"). Only use "irrelevant if the email has no possiblibility of filing under any other item in the list.
     substate: This is the outcome from the user so far. Please select the most suitable item from this list {SUBSTATES}. (e.g. "Unfortunately we have gone with other candidates" would be "rejected")
     job_position: This is the position of the job. Please select the most suitable item from this list {POSITIONS}.
+
+    To understand the stages for 'status' please use the following information:
+        applied: Can have only substates 'applied' or 'rejected'.
+        action_required: Can have only substates 'action_required', 'completed' or 'rejected'.
+        assessment: Can have substates only 'upcoming', 'completed' or 'rejected', "deadline.
+        interview: Can have substates only 'upcoming', 'completed' or 'rejected'
+    
+    To understand the options for 'substates' please use the following information:
+        applied: This is used when the candidate has only applied for a job and the email is an acknowledgment of the application. (e.g. Thank you for applying to BlackRock)
+        rejected: This is used when the candidate has been rejected from the job. (e.g. Unfortunately we have decided to move forward with other candidates)
+        accepted: This is when the candidate has been accepted for the job. (e.g. We would like to offer you a job opportunity at Meta)
+        completed: This is when the candidate has completed a task and the email is an acknowledgment of completion. (e.g. Thank you for completing the coding assessment)
+        action_required: This is when the candidate must take an action as requested by the email. (e.g. Please select interview times)
+        upcoming: This is when an interview or assessment has been scheduled and the email is a confirmation of the timings. (e.g. Your interview has been scheduled for Tuesday the 25th of February 2026)
+        deadline: This is when an assessment has a deadline to be completed by. (e.g. Please complete this assessment within 7 days)
 
     The following is the email content:
     --- EMAIL CONTENT ---
@@ -98,6 +113,6 @@ def data_extraction_prompt(email_subject, email_body):
         "position": job_position
     }}
 
-    Please think through step by step.
+    Please think this through step by step.
     """
     return prompt
