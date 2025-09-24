@@ -5,7 +5,9 @@ MODEL_NAME = POSSIBLE_MODELS[5]
 OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 
 #States for the prompt:
-STATES = ["IRRELEVANT", "UNSURE", "REJECTED", "ACCEPTED", "ASSESSMENT", "INTERVIEW", "JOB OFFER", "APPLIED", "ACTION REQUIRED"]
+STAGES = ["action_required", "applied", "assessment", "interview"]
+
+SUBSTATES = ["irrelevant", "unsure", "rejected", "accepted", "completed", "action_required"]
 
 EXTRACTION_STATES = ["Company Name", "Job Title", "Location", "Salary", "Required Skills"]
 
@@ -77,8 +79,9 @@ def data_extraction_prompt(email_subject, email_body):
 
     company_name: This is the name of the company that the email is coming from. (e.g. Samsung, Meta, BlackRock)
     job_name: This is the name of the job that has been applied for and the email is referencing. (e.g. Software Engineer, Data Scientist, Quant Analyst)
-    status: This is the stage of the job application. Please select the most suitable item in this list {STATES}.
-    job_position: This is the position of the job. Please select the most suitable item in this list {POSITIONS}.
+    status: This is the stage of the job application. Please select the most suitable item from this list {STAGES}. (e.g. "Please schedule a meeting time" is "action_required")
+    substate: This is the outcome from the user so far. Please select the most suitable item from this list {SUBSTATES}. (e.g. "Unfortunately we have gone with other candidates" would be "rejected")
+    job_position: This is the position of the job. Please select the most suitable item from this list {POSITIONS}.
 
     The following is the email content:
     --- EMAIL CONTENT ---
@@ -91,6 +94,7 @@ def data_extraction_prompt(email_subject, email_body):
         "company": company_name,
         "job_title": job_name,
         "status": status,
+        "substate": substate,
         "position": job_position
     }}
 
