@@ -8,6 +8,7 @@ from params import (
     data_extraction_prompt
     )
 from gmail_api import retrieve_gmails
+from datetime import datetime
 
 # Replaced by parse_email
 # def get_result(prompt): 
@@ -72,7 +73,7 @@ def extract_information():
             parsed_email = eval(out_json)
             if parsed_email["status"].upper() != "IRRELEVANT":
                 if parsed_email["status"].upper() != "UNSURE":
-                    parsed_email["date"] = emails[email_id]["Date"]
+                    parsed_email["date"] = datetime.strptime(emails[email_id]["Date"], "%a, %d %b %Y %H:%M:%S %z").isoformat()
                     parsed_email["sender_email"] = emails[email_id]["Sender_Email"]
                     parsed_email["subject"] = emails[email_id]["Subject"]
                     parsed_email["content"] = emails[email_id]["Content"]
@@ -99,6 +100,6 @@ if __name__ == '__main__':
         print(f"  Job Title: {processed_emails[email_id]['job_title']}")
         print(f"  Stage: {processed_emails[email_id]['status']}")
         print(f"  Position: {processed_emails[email_id]['position']}")
-        print(f"  Date: {processed_emails[email_id]["Date"]}")
-        # print(f"  Stage: {processed_emails[email_id]['content']}")
+        print(f"  Date: {processed_emails[email_id]["date"]}")
+        # print(f"  Content: {processed_emails[email_id]['content']}")
         print("-" * 25 + "\n")
