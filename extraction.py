@@ -54,6 +54,11 @@ def parse_email(prompt):
     result = response.split("</think>")[-1]
     return result
 
+def format_response(response):
+    start_index = response.index("{")
+    end_index = response.index("}")
+    return response[start_index:end_index+1]
+
 def extract_information():
     emails = retrieve_gmails()
     necessary_data = {}
@@ -62,14 +67,18 @@ def extract_information():
         email_subject = emails[email_id]["Subject"]
         email_content = emails[email_id]["Content"]
         prompt = data_extraction_prompt(email_subject, email_content)
-        out_json = parse_email(prompt)
-        parsed_email = eval(out_json)
-        if parsed_email["stage"].upper() != "IRRELEVANT":
-            if parsed_email["stage"].upper() != "UNSURE":
-                parsed_email["date"] = emails[email_id]["Date"]
-                parsed_email["sender_email"] = emails[email_id]["Sender_Email"]
-                parsed_email["subject"] = emails[email_id]["Subject"]
-                necessary_data[email_id] = parsed_email
+        out_json = format_response(parse_email(prompt))
+        try:
+            parsed_email = eval(out_json)
+            if parsed_email["status"].upper() != "IRRELEVANT":
+                if parsed_email["status"].upper() != "UNSURE":
+                    parsed_email["date"] = emails[email_id]["Date"]
+                    parsed_email["sender_email"] = emails[email_id]["Sender_Email"]
+                    parsed_email["subject"] = emails[email_id]["Subject"]
+                    # parsed_email["content"] = emails[email_id]["Content"]
+                    necessary_data[email_id] = parsed_email
+        except:
+            continue
     return necessary_data
 
 
@@ -88,6 +97,7 @@ if __name__ == '__main__':
         print(f"  Subject: {processed_emails[email_id]['subject']}")
         print(f"  Company: {processed_emails[email_id]['company']}")
         print(f"  Job Title: {processed_emails[email_id]['job_title']}")
-        print(f"  Stage: {processed_emails[email_id]['stage']}")
+        print(f"  Stage: {processed_emails[email_id]['status']}")
         print(f"  Stage: {processed_emails[email_id]['position']}")
+        # print(f"  Stage: {processed_emails[email_id]['content']}")
         print("-" * 25 + "\n")

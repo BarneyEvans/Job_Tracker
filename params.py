@@ -90,7 +90,7 @@ def data_extraction_prompt(email_subject, email_body):
     {{
         "company": company_name,
         "job_title": job_name,
-        "stage": status,
+        "status": status,
         "position": job_position
     }}
 
