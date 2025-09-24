@@ -75,7 +75,7 @@ def extract_information():
                     parsed_email["date"] = emails[email_id]["Date"]
                     parsed_email["sender_email"] = emails[email_id]["Sender_Email"]
                     parsed_email["subject"] = emails[email_id]["Subject"]
-                    # parsed_email["content"] = emails[email_id]["Content"]
+                    parsed_email["content"] = emails[email_id]["Content"]
                     necessary_data[email_id] = parsed_email
         except:
             continue
@@ -98,6 +98,7 @@ if __name__ == '__main__':
         print(f"  Company: {processed_emails[email_id]['company']}")
         print(f"  Job Title: {processed_emails[email_id]['job_title']}")
         print(f"  Stage: {processed_emails[email_id]['status']}")
-        print(f"  Stage: {processed_emails[email_id]['position']}")
+        print(f"  Position: {processed_emails[email_id]['position']}")
+        print(f"  Date: {processed_emails[email_id]["Date"]}")
         # print(f"  Stage: {processed_emails[email_id]['content']}")
         print("-" * 25 + "\n")
