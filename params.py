@@ -124,7 +124,8 @@ def get_upcoming_timings(email_body):
     There are 2 key pieces of information that you are required to gather. These are as follows:
 
     upcoming_date: This is the date the upcoming task occurs on. If no year is provided then please set it to the current year. If the upcoming date is in the past then increment the year until it is no longer in the past.
-    duration: This is the length of time the upcoming task will take.
+    time: This is the time the upcoming task occurs on the identified date. Please put this in the format "hh:mm:ss+timezone". (e.g. 15:00 BST becomes 15:00:00+01)
+    duration: This is the length of time the upcoming task will take. If there is no duration please set it to -1
 
     The following is the email content:
     --- EMAIL CONTENT ---
@@ -134,6 +135,7 @@ def get_upcoming_timings(email_body):
     Please return your response as a json in the following format:
     {{
         "upcoming_date": upcoming_date,
+        "time": time,
         "duration": duration,
     }}
 

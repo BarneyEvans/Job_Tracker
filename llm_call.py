@@ -31,4 +31,5 @@ def send_request(prompt, ollama=True):
 def format_response(response):
     start_index = response.index("{")
     end_index = response.index("}")
+    print(response[start_index:end_index+1])
     return response[start_index:end_index+1]
