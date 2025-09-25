@@ -1,41 +1,10 @@
 import requests
 from params import (
-    MODEL_NAME, 
-    OLLAMA_ENDPOINT, 
-    EXTRACTION_STATES, 
-    generate_classification_prompt, 
-    generate_single_extraction_prompt, 
     data_extraction_prompt
     )
 from gmail_api import retrieve_gmails
 from datetime import datetime
-from openai import OpenAI
-import os
-from dotenv import load_dotenv
-
-def parse_email(prompt, ollama=True):
-    if ollama:
-        options = {"temperature": 0}
-        data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}
-        classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
-        response = classification_response.json()['response']
-        result = response.split("</think>")[-1]
-    else:
-        load_dotenv()
-
-        api_key = os.getenv('CHATGPT_API_KEY')
-        client = OpenAI(api_key=api_key)
-        response = client.responses.create(
-            model="gpt-5-nano",
-            input=prompt,
-            # temperature=0.0,
-            service_tier="flex",
-        )
-        print(response)
-        print("--"*50)
-        result = response.output_text
-        print(result)
-    return result
+from llm_call import send_request
 
 def format_response(response):
     start_index = response.index("{")
@@ -50,7 +19,7 @@ def extract_information():
         email_subject = emails[email_id]["Subject"]
         email_content = emails[email_id]["Content"]
         prompt = data_extraction_prompt(email_subject, email_content)
-        output = parse_email(prompt, ollama=True)
+        output = send_request(prompt, ollama=True)
         try:
             out_json = format_response(output)
             parsed_email = eval(out_json)
