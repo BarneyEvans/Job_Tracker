@@ -116,3 +116,27 @@ def data_extraction_prompt(email_subject, email_body):
     Please think this through step by step.
     """
     return prompt
+
+def get_upcoming_timings(email_body):
+    prompt = f"""
+    You are a highly specialized information extraction agent, tasked to extract the relevant information from an email. The provided email contains information about an upcoming task for the recipient.
+
+    There are 2 key pieces of information that you are required to gather. These are as follows:
+
+    upcoming_date: This is the date the upcoming task occurs on. If no year is provided then please set it to the current year. If the upcoming date is in the past then increment the year until it is no longer in the past.
+    duration: This is the length of time the upcoming task will take.
+
+    The following is the email content:
+    --- EMAIL CONTENT ---
+    Body: {email_body}
+    ---
+
+    Please return your response as a json in the following format:
+    {{
+        "upcoming_date": upcoming_date,
+        "duration": duration,
+    }}
+
+    Please think this through step by step.
+    """
+    return prompt
