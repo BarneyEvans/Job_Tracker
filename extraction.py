@@ -68,8 +68,9 @@ def extract_information():
         email_subject = emails[email_id]["Subject"]
         email_content = emails[email_id]["Content"]
         prompt = data_extraction_prompt(email_subject, email_content)
-        out_json = format_response(parse_email(prompt))
+        output = parse_email(prompt)
         try:
+            out_json = format_response(output)
             parsed_email = eval(out_json)
             if parsed_email["status"].upper() != "IRRELEVANT":
                 if parsed_email["status"].upper() != "UNSURE":
