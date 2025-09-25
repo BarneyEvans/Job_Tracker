@@ -119,7 +119,6 @@ def retrieve_gmails():
     ids_for_processing, latest_timestamp = get_new_email_ids(service, timestamp)
     write_last_timestamp(latest_timestamp)
     content = get_content(ids_for_processing, service)
-    quit()
     return content
 
     
