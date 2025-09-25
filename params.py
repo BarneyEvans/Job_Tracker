@@ -75,7 +75,7 @@ def data_extraction_prompt(email_subject, email_body):
     prompt = f"""
     You are a highly specialized information extraction agent, tasked to extract the relevant information from an email.
 
-    There are 4 key pieces of information that you are required to gather. These are as follows:
+    There are 5 key pieces of information that you are required to gather. These are as follows:
 
     company_name: This is the name of the company that the email is coming from. (e.g. Samsung, Meta, BlackRock)
     job_name: This is the name of the job that has been applied for and the email is referencing. (e.g. Software Engineer, Data Scientist, Quant Analyst)
@@ -104,7 +104,7 @@ def data_extraction_prompt(email_subject, email_body):
     Body: {email_body}
     ---
 
-    Please return your response as a json in the following format:
+    If 'status' is irrelevant, please return nothing (no characters), otherwise, please return your response as a json in the following format:
     {{
         "company": company_name,
         "job_title": job_name,
