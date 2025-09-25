@@ -94,7 +94,7 @@ def data_extraction_prompt(email_subject, email_body):
         rejected: This is used when the candidate has been rejected from the job. (e.g. Unfortunately we have decided to move forward with other candidates)
         accepted: This is when the candidate has been accepted for the job. (e.g. We would like to offer you a job opportunity at Meta)
         completed: This is when the candidate has completed a task and the email is an acknowledgment of completion. (e.g. Thank you for completing the coding assessment)
-        awaiting_response: This is when the candidate must respond to the email as requested by the email. (e.g. Please select interview times)
+        awaiting_response: This is when the candidate must respond to the email as requested by the email. (e.g. Please select interview times, Please fill in these details)
         upcoming: This is when an interview or assessment has been scheduled and the email is a confirmation of the timings. (e.g. Your interview has been scheduled for Tuesday the 25th of February 2026)
         deadline: This is when an assessment has a deadline to be completed by. (e.g. Please complete this assessment within 7 days)
 
