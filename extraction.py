@@ -9,50 +9,32 @@ from params import (
     )
 from gmail_api import retrieve_gmails
 from datetime import datetime
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
-# Replaced by parse_email
-# def get_result(prompt): 
-#     options = {"temperature": 0}
-#     data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}
-#     classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
-#     response = classification_response.json()['response']
-#     result = response.split("</think>")[-1]
-#     return result
+def parse_email(prompt, ollama=True):
+    if ollama:
+        options = {"temperature": 0}
+        data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}
+        classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
+        response = classification_response.json()['response']
+        result = response.split("</think>")[-1]
+    else:
+        load_dotenv()
 
-
-# Replaced by extract_information
-# def information_extraction(): 
-#     emails = retrieve_gmails()
-#     useful_emails = {}
-
-#     for email in emails:
-#         email_subject = emails[email]["Subject"]
-#         email_content = emails[email]["Content"]
-#         prompt = generate_classification_prompt(email_subject, email_content)
-
-#         #First Check for classification
-        
-#         emails[email]["Classification"] = get_result(prompt).strip()
-
-#         if "irrelevant" not in emails[email]["Classification"].lower():
-#             useful_emails[email] = emails[email]
-    
-#     for email in useful_emails:
-#         email_subject = emails[email]["Subject"]
-#         email_content = emails[email]["Content"]
-#         #Second Check for general information extraction
-#         for state in EXTRACTION_STATES:
-#             prompt = generate_single_extraction_prompt(email_subject, email_content, state)
-#             useful_emails[email][state] = get_result(prompt).strip()
-
-#     return useful_emails
-
-def parse_email(prompt):
-    options = {"temperature": 0}
-    data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}
-    classification_response = requests.post(OLLAMA_ENDPOINT, json=data)
-    response = classification_response.json()['response']
-    result = response.split("</think>")[-1]
+        api_key = os.getenv('CHATGPT_API_KEY')
+        client = OpenAI(api_key=api_key)
+        response = client.responses.create(
+            model="gpt-5-nano",
+            input=prompt,
+            # temperature=0.0,
+            service_tier="flex",
+        )
+        print(response)
+        print("--"*50)
+        result = response.output_text
+        print(result)
     return result
 
 def format_response(response):
@@ -68,7 +50,7 @@ def extract_information():
         email_subject = emails[email_id]["Subject"]
         email_content = emails[email_id]["Content"]
         prompt = data_extraction_prompt(email_subject, email_content)
-        output = parse_email(prompt)
+        output = parse_email(prompt, ollama=True)
         try:
             out_json = format_response(output)
             parsed_email = eval(out_json)
