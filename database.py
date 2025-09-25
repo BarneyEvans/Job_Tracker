@@ -135,6 +135,7 @@ def write_last_timestamp(timestamp, user_id=os.getenv('USER_ID')):
 def add_to_tables(data):
     application_id = new_application(data)
     new_email(data, application_id)
+    new_calendar(data,application_id)
 
 
 if __name__ == '__main__':
