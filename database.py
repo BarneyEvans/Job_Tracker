@@ -101,18 +101,31 @@ def new_calendar(data, application_id):
         
         out_json = format_response(output)
         parsed_email = eval(out_json)
-        response = (
-            supabase_client.table("calendar")
-            .insert(
-                {
-                    "application_id": application_id, 
-                    "date": parsed_email["upcoming_date"],
-                    "time": parsed_email["time"],
-                    "duration": parsed_email["duration"],
-                }
+        if str(parsed_email["duration"]) == "-1":
+            response = (
+                supabase_client.table("calendar")
+                .insert(
+                    {
+                        "application_id": application_id, 
+                        "date": parsed_email["upcoming_date"],
+                        "time": parsed_email["time"],
+                    }
+                )
+                .execute()
             )
-            .execute()
-        )
+        else:
+            response = (
+                supabase_client.table("calendar")
+                .insert(
+                    {
+                        "application_id": application_id, 
+                        "date": parsed_email["upcoming_date"],
+                        "time": parsed_email["time"],
+                        "duration": parsed_email["duration"],
+                    }
+                )
+                .execute()
+            )
         
 
 def read_last_timestamp(user_id=os.getenv('USER_ID')):
