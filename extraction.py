@@ -60,6 +60,10 @@ def extract_information():
                     parsed_email["sender_email"] = emails[email_id]["Sender_Email"]
                     parsed_email["subject"] = emails[email_id]["Subject"]
                     parsed_email["content"] = emails[email_id]["Content"]
+                    if parsed_email["status"] == "awaiting_response":
+                        parsed_email["status"] = "action_required"
+                    if parsed_email["substate"] == "awaiting_response":
+                        parsed_email["substate"] = "action_required"
                     necessary_data[email_id] = parsed_email
         except:
             continue
