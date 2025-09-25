@@ -96,6 +96,23 @@ def new_application(data):
 def new_calendar(data):
     None
 
+def read_last_timestamp(user_id=os.getenv('USER_ID')):
+    response = (
+        supabase_client.table("user_email")
+        .select("last_timestamp")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    return response.data[0]["last_timestamp"]
+
+def write_last_timestamp(timestamp, user_id=os.getenv('USER_ID')):
+    response = (
+            supabase_client.table("user_email")
+            .update({"last_timestamp": timestamp,})
+            .eq("user_id", user_id)
+            .execute()
+        )
+
 def add_to_tables(data):
     application_id = new_application(data)
     new_email(data, application_id)

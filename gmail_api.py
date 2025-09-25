@@ -5,6 +5,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 import json
 import base64
+from database import read_last_timestamp, write_last_timestamp
 
 # Define the scope for our application
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -29,17 +30,30 @@ def get_gmail_service():
     service = build('gmail', 'v1', credentials=creds)
     return service
 
-def read_and_write_to_json(current_service):
-    with open("checkpoint.json", "r") as f:
-        checkpoint_data = json.load(f)
-
-    # USING SETS TO MAKE THIS SHIT QUICK ASF
+def get_new_email_ids(current_service, last_timestamp):
+    latest_timestamp = last_timestamp
+    new_ids = []
     all_messages_info = current_service.users().messages().list(userId='me').execute()
-    new_id_set = set([msg['id'] for msg in all_messages_info['messages']])
-    processed_id_set = set(checkpoint_data['processed_ids'])
-    unprocessed_ids = list(new_id_set - processed_id_set)
-    
-    return unprocessed_ids
+    messages = []
+    for msg in all_messages_info.get('messages', []):
+        msg_detail = current_service.users().messages().get(
+            userId='me',
+            id=msg['id'],
+            format='metadata'   # faster than 'full' since you just need metadata
+        ).execute()
+        
+        messages.append({
+            "id": msg['id'],
+            "timestamp": int(msg_detail['internalDate'])  # in ms since epoch
+        })
+    for msg in messages:
+        if msg["timestamp"] > last_timestamp:
+            new_ids.append(msg["id"])
+            if msg["timestamp"] > latest_timestamp:
+                latest_timestamp = msg["timestamp"]
+    return new_ids, latest_timestamp
+
+
 
 def get_subject(message):
     for info in message["payload"]["headers"]:
@@ -90,6 +104,7 @@ def get_content(ids, current_service):
     email_content = {}
     for id in ids:
         current_message = current_service.users().messages().get(userId="me", id=id).execute()
+        print(get_subject(current_message))
         #print("-" * 100)
         email_content[id] = {}
         email_content[id]["Subject"] = get_subject(current_message)
@@ -100,8 +115,11 @@ def get_content(ids, current_service):
 
 def retrieve_gmails():
     service = get_gmail_service()
-    ids_for_processing = read_and_write_to_json(service)
+    timestamp = read_last_timestamp()
+    ids_for_processing, latest_timestamp = get_new_email_ids(service, timestamp)
+    write_last_timestamp(latest_timestamp)
     content = get_content(ids_for_processing, service)
+    quit()
     return content
 
     
