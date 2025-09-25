@@ -97,23 +97,23 @@ def new_application(data, user_id=os.getenv('USER_ID')):
 def new_calendar(data, application_id):
     if data["substate"] == "upcoming":
         prompt = get_upcoming_timings(data["content"])
-        output = send_request(prompt, ollama=True)
-        try:
-            out_json = format_response(output)
-            parsed_email = eval(out_json)
-            response = (
-                supabase_client.table("calendar")
-                .insert(
-                    {
-                        "application_id": application_id, 
-                        "date": parsed_email["upcoming_date"],
-                        "duration": parsed_email["duration"],
-                    }
-                )
-                .execute()
+        output = send_request(prompt, ollama=False)
+        
+        out_json = format_response(output)
+        parsed_email = eval(out_json)
+        response = (
+            supabase_client.table("calendar")
+            .insert(
+                {
+                    "application_id": application_id, 
+                    "date": parsed_email["upcoming_date"],
+                    "time": parsed_email["time"],
+                    "duration": parsed_email["duration"],
+                }
             )
-        except:
-            None
+            .execute()
+        )
+        
 
 def read_last_timestamp(user_id=os.getenv('USER_ID')):
     response = (
