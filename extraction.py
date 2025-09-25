@@ -4,12 +4,8 @@ from params import (
     )
 from gmail_api import retrieve_gmails
 from datetime import datetime
-from llm_call import send_request
+from llm_call import send_request, format_response
 
-def format_response(response):
-    start_index = response.index("{")
-    end_index = response.index("}")
-    return response[start_index:end_index+1]
 
 def extract_information():
     emails = retrieve_gmails()

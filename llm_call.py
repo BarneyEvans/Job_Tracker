@@ -27,3 +27,8 @@ def send_request(prompt, ollama=True):
         )
         result = response.output_text
     return result
+
+def format_response(response):
+    start_index = response.index("{")
+    end_index = response.index("}")
+    return response[start_index:end_index+1]

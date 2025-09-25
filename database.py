@@ -2,7 +2,8 @@ from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-from params import STAGES, SUBSTATES
+from params import STAGES, SUBSTATES, get_upcoming_timings
+from llm_call import send_request, format_response
 
 load_dotenv()
 
@@ -25,7 +26,7 @@ def new_email(data, application_id):
             .execute()
         )
     
-def new_application(data):
+def new_application(data, user_id=os.getenv('USER_ID')):
     response = (
         supabase_client.table("job_applications")
         .select("company, application_id")
@@ -77,7 +78,7 @@ def new_application(data):
             supabase_client.table("job_applications")
             .insert(
                 {
-                    "user": "5cd0aed8-cb33-4832-8600-849663962874", 
+                    "user": user_id, 
                     "latest_date": data["date"],
                     "company": data["company"],
                     "job_title": data["job_title"],
@@ -93,8 +94,26 @@ def new_application(data):
         application_id = response.data[0]["application_id"]
         return application_id
 
-def new_calendar(data):
-    None
+def new_calendar(data, application_id):
+    if data["substate"] == "upcoming":
+        prompt = get_upcoming_timings(data["content"])
+        output = send_request(prompt, ollama=True)
+        try:
+            out_json = format_response(output)
+            parsed_email = eval(out_json)
+            response = (
+                supabase_client.table("calendar")
+                .insert(
+                    {
+                        "application_id": application_id, 
+                        "date": parsed_email["upcoming_date"],
+                        "duration": parsed_email["duration"],
+                    }
+                )
+                .execute()
+            )
+        except:
+            None
 
 def read_last_timestamp(user_id=os.getenv('USER_ID')):
     response = (
