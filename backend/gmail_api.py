@@ -15,17 +15,17 @@ def get_gmail_service():
     Authenticates with the Gmail API and returns a service object.
     """
     creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists('backend/token.json'):
+        creds = Credentials.from_authorized_user_file('backend/token.json', SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                'backend/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open('backend/token.json', 'w') as token:
             token.write(creds.to_json())
     service = build('gmail', 'v1', credentials=creds)
     return service
@@ -125,6 +125,6 @@ def retrieve_gmails():
 # This part is just for testing our function directly
 if __name__ == '__main__':
     test = retrieve_gmails()
-    with open("emails.json", "w", encoding="utf-8") as f:
+    with open("backend/emails.json", "w", encoding="utf-8") as f:
         json.dump(test, f, indent=4, ensure_ascii=False)
-    print("Saved to emails.json")
+    print("Saved to backend/emails.json")
