@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+:root {
+  /* --font-sans: "Inter", sans-serif; */
+  /* --font-sans: "Roboto", sans-serif; */
+  /* --font-sans: "Open Sans", sans-serif; */
+  --font-sans: "Lato", sans-serif;
+  /* --font-sans: "Poppins", sans-serif; */
+  /* --font-sans: "Nunito", sans-serif; */
+  /* --font-sans: "Work Sans", sans-serif; */
+  /* --font-sans: "Source Sans Pro", sans-serif; */
+  /* --font-sans: "Montserrat", sans-serif; */
+  /* --font-sans-: "Ubuntu", sans-serif; */
+}
+
+
+
+.scroll-overlay::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-overlay::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
