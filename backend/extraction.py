@@ -52,6 +52,6 @@ if __name__ == '__main__':
         print(f"  Job Title: {processed_emails[email_id]['job_title']}")
         print(f"  Stage: {processed_emails[email_id]['status']}")
         print(f"  Position: {processed_emails[email_id]['position']}")
-        print(f"  Date: {processed_emails[email_id]["date"]}")
+        print(f"  Date: {processed_emails[email_id]['date']}")
         # print(f"  Content: {processed_emails[email_id]['content']}")
         print("-" * 25 + "\n")
