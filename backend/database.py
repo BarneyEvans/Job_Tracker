@@ -12,6 +12,15 @@ url = os.getenv('SUPABASE_URL')
 key = os.getenv('SUPABASE_KEY')
 supabase_client = create_client(url, key)
 
+user_client = None
+
+def create_user_client(token):
+    user_client: Client = create_client(
+        url,
+        key,
+        options={"headers": {"Authorization": f"Bearer {token}"}}
+    )
+
 
 def new_email(data, application_id):
     response = (

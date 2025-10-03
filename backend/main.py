@@ -1,7 +1,17 @@
-from database import add_to_tables
+from database import add_to_tables, add_user_to_table
 from extraction import extract_information
 
-processed_emails = extract_information()
-for email_id in processed_emails.keys():
-    print(f"Adding {processed_emails[email_id]['company']} to table")
-    add_to_tables(processed_emails[email_id])
+
+def check_updates(user_id):
+    processed_emails = extract_information(user_id)
+    for email_id in processed_emails.keys():
+        print(f"Adding {processed_emails[email_id]['company']} to table")
+        add_to_tables(processed_emails[email_id])
+
+def sign_up(email):
+    None
+
+def connect_email(payload):
+    add_user_to_table(payload)
+    check_updates(payload["user_id"])
+

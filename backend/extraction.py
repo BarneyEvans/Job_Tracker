@@ -7,7 +7,7 @@ from datetime import datetime
 from llm_call import send_request, format_response
 
 
-def extract_information():
+def extract_information(user_id):
     emails = retrieve_gmails()
     necessary_data = {}
 
