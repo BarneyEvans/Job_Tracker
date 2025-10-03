@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import ApplicationDetailsNav from "../components/navbar_components/ApplicationDetailsNav";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/side_bar/Sidebar";
 import EventTimeline from "../components/details_components/EventTimeline";
 
 export default function ApplicationDetails() {

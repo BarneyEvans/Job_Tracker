@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import CalendarNav from "../components/navbar_components/CalendarNav";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/side_bar/Sidebar";
 import CalendarEvent from "../components/calendar_components/CalendarEvent";
 import { supabase } from "../supabaseClient";
 

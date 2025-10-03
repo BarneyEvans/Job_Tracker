@@ -26,7 +26,7 @@ export default function ApplicationDetailsNav() {
   }, []);
 
   return (
-    <div className="flex top-0 right-0 z-10">
+    <div className="flex top-0 right-0 z-9">
     <nav className="bg-[#FDFFFC] text-white w-full px-4 py-2 border-b-1 border-[#b7c2c5b0] min-h-14 flex items-center justify-between">
         <div className="flex justify-between items-center">
           <NavLink

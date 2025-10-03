@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardNav from "../components/navbar_components/DashboardNav";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/side_bar/Sidebar";
 import Board from "../components/application_board/Board";
 import { getApplicationsByStage } from "../services/fetch_applications";
 

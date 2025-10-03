@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient"
 import Navbar from "../components/navbar_components/DashboardNav"
-import Sidebar from "../components/Sidebar"
+import Sidebar from "../components/side_bar/Sidebar"
 
 export default function Account() {
   const handleSignOut = async () => {

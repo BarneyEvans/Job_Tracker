@@ -49,7 +49,7 @@ export default function CalendarNav({ currentWeekStart, onPrevWeek, onNextWeek }
   };
 
   return (
-    <div className="flex top-0 right-0 z-10">
+    <div className="flex top-0 right-0 z-9">
     <nav className="bg-[#FDFFFC] text-white w-full px-4 p-2 border-b-1 border-[#b7c2c5b0] min-h-14 flex items-center justify-between">
         <div className="text-[#011627] space-x-6 hidden md:flex">
           <h1 className="font-bold text-lg"> Calendar</h1>
