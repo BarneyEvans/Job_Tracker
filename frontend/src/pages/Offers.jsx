@@ -1,5 +1,5 @@
 import OffersNav from "../components/navbar_components/OffersNav";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/side_bar/Sidebar";
 
 export default function Offers() {
     return (
