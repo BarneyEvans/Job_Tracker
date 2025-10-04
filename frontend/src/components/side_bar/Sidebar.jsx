@@ -127,20 +127,29 @@ export default function Sidebar() {
                 <div
                   className="fixed inset-0 z-40"
                   style={{ backgroundColor: "rgba(0,0,0,0.1)" }} // 10% black
-                  onClick={handleOverlayToggle} // optional: click outside to close
+                  onClick={handleOverlayToggle} // click outside to close
                 />
 
                 {/* Modal content */}
                 <div className="fixed inset-0 flex items-center justify-center z-50">
-                  <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                    <h2 className="text-xl font-bold mb-4">Gmail Connections</h2>
-                    <p>Put your overlay content here.</p>
+                  <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    
+                    {/* Cross button top-right */}
                     <button
-                      className="mt-4 bg-[#011627] text-[#FDFFFC] px-2 py-1 rounded-lg hover:bg-[#052F51]"
+                      className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold"
                       onClick={handleOverlayToggle}
                     >
-                      Close
+                      &times;
                     </button>
+
+                    {/* Modal text */}
+                    <h2 className="text-xl font-bold mb-2">Gmail Connections</h2>
+                    <p className="mb-4 text-gray-700">
+                      You may connect multiple Gmail accounts to VestigoJobs. Currently, we're only compatible with Gmail - so if you do not have an account please create a new Gmail account and come back.
+                    </p>
+
+                    {/* Gmail Sync Button */}
+                    <GmailSyncButton />
                   </div>
                 </div>
               </>

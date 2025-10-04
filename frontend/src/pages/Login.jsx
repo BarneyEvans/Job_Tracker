@@ -86,16 +86,7 @@ export default function Login() {
         {/* Continue with Google */}
         <button
             type="button"
-            onClick={async () => {
-                const { error } = await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: {
-                    // Optional: redirect after login
-                    // redirectTo: window.location.origin
-                },
-                });
-                if (error) console.error("Error signing in with Google:", error.message);
-            }}
+            onClick={async () => handleGoogleLogin()}
             className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition"
             >
             <svg

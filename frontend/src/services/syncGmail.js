@@ -1,8 +1,10 @@
-async function triggerSync() {
+import { supabase } from "../supabaseClient";
+
+export async function triggerSync() {
   const session = await supabase.auth.getSession();
   const accessToken = session.data.session?.access_token;
 
-  const response = await fetch("/api/sync-gmail", {
+  const response = await fetch("http://localhost:8000/sync-gmail", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

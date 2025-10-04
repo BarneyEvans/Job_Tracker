@@ -27,7 +27,6 @@ def get_gmail_service():
         # Save the credentials for the next run
         with open('backend/token.json', 'w') as token:
             token.write(creds.to_json())
-    print(creds)
     service = build('gmail', 'v1', credentials=creds)
     return service
 
