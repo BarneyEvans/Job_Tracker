@@ -4,12 +4,22 @@ from dotenv import load_dotenv
 from datetime import datetime
 from params import STAGES, SUBSTATES, get_upcoming_timings
 from llm_call import send_request, format_response
+import time
 
 load_dotenv()
 
 url = os.getenv('SUPABASE_URL')
 key = os.getenv('SUPABASE_KEY')
 supabase_client = create_client(url, key)
+
+user_client = None
+
+def create_user_client(token):
+    user_client: Client = create_client(
+        url,
+        key,
+        options={"headers": {"Authorization": f"Bearer {token}"}}
+    )
 
 
 def new_email(data, application_id):
@@ -150,6 +160,19 @@ def add_to_tables(data):
     new_email(data, application_id)
     new_calendar(data,application_id)
 
+def add_user_to_table(data):
+    response = (
+            supabase_client.table("user_email")
+            .insert(
+                {
+                    "last_timestamp": int(time.time() * 1000),
+                    "connected_email": data["connected_email"],
+                    "user_email": data["user_email"],
+                    "user_id": data["user_id"],
+                }
+            )
+            .execute()
+        )
 
 if __name__ == '__main__':
     dt = "Wed, 24 Sep 2025 10:44:56 +0000"
