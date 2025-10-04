@@ -45,7 +45,7 @@ export default function GmailSyncButton() {
       </svg>
 
       <span className="text-sm font-medium text-gray-700">
-        Sync Gmail
+        Connect Gmail
       </span>
     </button>
   );

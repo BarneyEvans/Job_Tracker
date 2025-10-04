@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabaseClient";
+import GmailConnectButton from "./GmailConnectButton";
 import GmailSyncButton from "./GmailSyncButton";
 
 export default function Sidebar() {
@@ -82,6 +83,7 @@ export default function Sidebar() {
             </>
           ) : (
             <>
+            <GmailSyncButton />
             <button
               type="button"
               onClick={handleOverlayToggle}
@@ -149,7 +151,7 @@ export default function Sidebar() {
                     </p>
 
                     {/* Gmail Sync Button */}
-                    <GmailSyncButton />
+                    <GmailConnectButton />
                   </div>
                 </div>
               </>

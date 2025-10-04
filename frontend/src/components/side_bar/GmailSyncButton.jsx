@@ -1,16 +1,52 @@
-async function triggerSync() {
-  const session = await supabase.auth.getSession();
-  const accessToken = session.data.session?.access_token;
+import React, { useState } from "react";
+import { triggerSync } from "../../services/syncGmail";
 
-  const response = await fetch("/api/sync-gmail", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`, // send the JWT
-    },
-    body: JSON.stringify({ /* maybe extra info if needed */ }),
-  });
+export default function GmailSyncButton() {
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
 
-  const result = await response.json();
-  console.log(result);
+  const handleSync = async () => {
+    setLoading(true);
+    setStatus("");
+    try {
+      const result = await triggerSync();
+      setStatus(`✅ ${result.message}`);
+    } catch (error) {
+      console.error("Sync failed:", error);
+      setStatus("❌ Sync failed — check console");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <button
+        type="button"
+        onClick={handleSync}
+        disabled={loading}
+        className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition"
+      >
+        {/* 🔄 Sync Icon (SVG) */}
+        <svg
+          className={`w-5 h-5 mr-2 ${loading ? "animate-spin" : ""}`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0114-8M19 5a9 9 0 01-14 8"
+          />
+        </svg>
+
+        <span className="text-sm font-medium text-gray-700">
+          {loading ? "Syncing..." : "Sync Gmail"}
+        </span>
+      </button>
+    </div>
+  );
 }
