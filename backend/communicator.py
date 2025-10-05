@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from main import check_updates
+from main import check_updates, remove_application
 
 app = FastAPI()
 
@@ -35,4 +35,18 @@ async def receive_data(request: Request):
         "message": "User ID received successfully",
         "user_id": user_id,
         "received_data": data,
+    }
+
+
+@app.delete("/api/applications/{application_id}")
+async def delete_application(application_id: str, user_id: str = Query(...)):
+    """Delete a job application and its related data."""
+    deleted = remove_application(application_id, user_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Application not found for this user")
+
+    return {
+        "message": "Application removed successfully",
+        "application_id": application_id,
     }

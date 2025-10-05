@@ -1,6 +1,6 @@
 import StageColumn from "./StageColumn";
 
-export default function Board({ stages, loading }) {
+export default function Board({ stages, loading, onDelete }) {
   // Mapping from DB values -> UI labels
   const stageMap = {
     applied: "Applied 📨",
@@ -27,6 +27,7 @@ export default function Board({ stages, loading }) {
           stageName={stage.name} // pretty display
           applications={stage.applications}
           loading={loading}
+          onDelete={onDelete}
         />
       ))}
     </div>

@@ -26,6 +26,9 @@ def extract_information(user_id):
                     parsed_email["sender_email"] = emails[email_id]["Sender_Email"]
                     parsed_email["subject"] = emails[email_id]["Subject"]
                     parsed_email["content"] = emails[email_id]["Content"]
+                    parsed_email["thread_id"] = emails[email_id].get("ThreadId")
+                    parsed_email["message_id"] = emails[email_id].get("MessageId")
+                    parsed_email["in_reply_to"] = emails[email_id].get("InReplyTo")
                     if parsed_email["status"] == "awaiting_response":
                         parsed_email["status"] = "action_required"
                     if parsed_email["substate"] == "awaiting_response":

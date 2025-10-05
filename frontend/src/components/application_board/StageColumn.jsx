@@ -2,7 +2,7 @@ import { useState } from "react";
 import Application from "./Application";
 import Filler from "./Filler";
 
-export default function StageColumn({ stageName, applications, loading }) {
+export default function StageColumn({ stageName, applications, loading, onDelete }) {
   const [showHidden, setShowHidden] = useState(false);
 
   if (loading) {
@@ -63,6 +63,7 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isUpcoming
+            onDelete={onDelete}
           />
         ))}
 
@@ -75,6 +76,7 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isDeadline
+            onDelete={onDelete}
           />
         ))}
 
@@ -87,6 +89,7 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isAction
+            onDelete={onDelete}
           />
         ))}
 
@@ -99,6 +102,7 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isPassive
+            onDelete={onDelete}
           />
         ))}
 
@@ -131,6 +135,7 @@ export default function StageColumn({ stageName, applications, loading }) {
                     role={app.role}
                     date={app.date}
                     isRejected={app.state === rejectedState}
+                    onDelete={onDelete}
                   />
                 ))}
               </div>

@@ -23,7 +23,18 @@ export default function Home() {
       <div className="flex-1 flex flex-col ">
         <DashboardNav />
         <main className="flex z-0 bg-[#EDF6F9] overflow-hidden">
-          <Board stages={stages} loading={loading} />
+          <Board
+            stages={stages}
+            loading={loading}
+            onDelete={(id) =>
+              setStages((prev) =>
+                prev.map((s) => ({
+                  ...s,
+                  applications: s.applications.filter((a) => a.id !== id),
+                }))
+              )
+            }
+          />
         </main>
       </div>
     </div>
