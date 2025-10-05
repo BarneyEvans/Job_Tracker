@@ -14,6 +14,7 @@ export default function Application({
   isRejected = false,
   isDeadline = false,
   onDelete,
+  accentColor,
 }) {
   const today = new Date();
   const appDate = date ? new Date(date) : null;
@@ -64,7 +65,7 @@ export default function Application({
 
       {/* Header: company (with right padding so it doesn't sit under the X) */}
       <div className="flex justify-between items-start pr-6">
-        <div className="font-bold text-blue-500">{company}</div>
+        <div className="font-bold" style={{ color: accentColor || "#2563eb" }}>{company}</div>
       </div>
 
       {/* Role */}
@@ -112,4 +113,3 @@ export default function Application({
     </NavLink>
   );
 }
-
