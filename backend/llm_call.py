@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-def send_request(prompt, ollama=True):
+def send_request(prompt, ollama=False):
     if ollama:
         options = {"temperature": 0}
         data = {"model": MODEL_NAME, "prompt": prompt, "stream": False, "options": options}

@@ -1,4 +1,4 @@
-from supabase import create_client, Client
+from supabase import create_client, Client, ClientOptions
 import os
 from dotenv import load_dotenv
 from datetime import datetime
@@ -10,19 +10,9 @@ load_dotenv()
 
 url = os.getenv('SUPABASE_URL')
 key = os.getenv('SUPABASE_KEY')
-supabase_client = create_client(url, key)
+supabase_client: Client = create_client(url, key)
 
-user_client = None
-
-def create_user_client(token):
-    user_client: Client = create_client(
-        url,
-        key,
-        options={"headers": {"Authorization": f"Bearer {token}"}}
-    )
-
-
-def new_email(data, application_id):
+def new_email(data, application_id, user_id):
     response = (
         supabase_client.table("application_events")
             .insert(
@@ -36,10 +26,11 @@ def new_email(data, application_id):
             .execute()
         )
     
-def new_application(data, user_id=os.getenv('USER_ID')):
+def new_application(data, user_id):
     response = (
         supabase_client.table("job_applications")
         .select("company, application_id")
+        .eq("user_id", user_id)
         .execute()
     )
 
@@ -51,6 +42,7 @@ def new_application(data, user_id=os.getenv('USER_ID')):
                 supabase_client.table("job_applications")
                 .update({"latest_date": data["date"],})
                 .eq("company", data["company"])
+                .eq("user_id", user_id)
                 .execute()
             )
         elif (data["substate"] not in SUBSTATES or data["substate"] == "unsure"):
@@ -60,6 +52,7 @@ def new_application(data, user_id=os.getenv('USER_ID')):
                         "stage": data["status"],
                         })
                 .eq("company", data["company"])
+                .eq("user_id", user_id)
                 .execute()
             )
         elif (data["status"] not in STAGES or data["status"] == "unsure"):
@@ -69,6 +62,7 @@ def new_application(data, user_id=os.getenv('USER_ID')):
                         "substate": data["substate"],
                         })
                 .eq("company", data["company"])
+                .eq("user_id", user_id)
                 .execute()
             )
         else:
@@ -79,6 +73,7 @@ def new_application(data, user_id=os.getenv('USER_ID')):
                         "substate": data["substate"],
                         })
                 .eq("company", data["company"])
+                .eq("user_id", user_id)
                 .execute()
             )
         index = companies.index(data["company"])
@@ -88,7 +83,7 @@ def new_application(data, user_id=os.getenv('USER_ID')):
             supabase_client.table("job_applications")
             .insert(
                 {
-                    "user": user_id, 
+                    "user_id": user_id,
                     "latest_date": data["date"],
                     "company": data["company"],
                     "job_title": data["job_title"],
@@ -104,7 +99,7 @@ def new_application(data, user_id=os.getenv('USER_ID')):
         application_id = response.data[0]["application_id"]
         return application_id
 
-def new_calendar(data, application_id):
+def new_calendar(data, application_id, user_id):
     if data["substate"] == "upcoming":
         prompt = get_upcoming_timings(data["content"])
         output = send_request(prompt, ollama=False)
@@ -138,16 +133,20 @@ def new_calendar(data, application_id):
             )
         
 
-def read_last_timestamp(user_id=os.getenv('USER_ID')):
+def read_last_timestamp(user_id):
+    user_id = os.getenv("USER_ID")  # hardcoded for testing
     response = (
         supabase_client.table("user_email")
         .select("last_timestamp")
         .eq("user_id", user_id)
         .execute()
     )
+    if not response.data or len(response.data) == 0:
+        return None  # or some default value
+
     return response.data[0]["last_timestamp"]
 
-def write_last_timestamp(timestamp, user_id=os.getenv('USER_ID')):
+def write_last_timestamp(timestamp, user_id):
     response = (
             supabase_client.table("user_email")
             .update({"last_timestamp": timestamp,})
@@ -155,12 +154,13 @@ def write_last_timestamp(timestamp, user_id=os.getenv('USER_ID')):
             .execute()
         )
 
-def add_to_tables(data):
-    application_id = new_application(data)
-    new_email(data, application_id)
-    new_calendar(data,application_id)
+def add_to_tables(data, user_id):
+    print("teeeeesting")
+    application_id = new_application(data, user_id)
+    new_email(data, application_id, user_id)
+    new_calendar(data, application_id, user_id)
 
-def add_user_to_table(data):
+def add_user_to_table(data, user_id):
     response = (
             supabase_client.table("user_email")
             .insert(
@@ -168,9 +168,9 @@ def add_user_to_table(data):
                     "last_timestamp": int(time.time() * 1000),
                     "connected_email": data["connected_email"],
                     "user_email": data["user_email"],
-                    "user_id": data["user_id"],
                 }
             )
+            .eq("user_id", user_id)
             .execute()
         )
 

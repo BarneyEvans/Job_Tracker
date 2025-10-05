@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from main import check_updates
 
 app = FastAPI()
 
@@ -16,26 +17,22 @@ app.add_middleware(
 @app.post("/api/data")
 async def receive_data(request: Request):
     """
-    Receives a POST request from the frontend with a JWT in the Authorization header.
-    Returns the token so it can later be used for backend Supabase access.
+    Receives a POST request from the frontend with user_id in the JSON body.
+    Uses the service role key to access Supabase on behalf of that user.
     """
-    auth_header = request.headers.get("Authorization")
-
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
-
-    # Extract JWT token from "Bearer <token>"
-    token = auth_header.split(" ")[1]
-
-    # (Optional) read body if you expect extra info
     data = await request.json()
-    print("Received token:", token)
-    # For now, just return the token and any data sent
+    user_id = data.get("user_id")
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Missing user_id in request body")
+
+    print("Received user_id:", user_id)
+
+    # Call your backend function with user_id instead of token
+    check_updates(user_id)
+
     return {
-        "message": "Token received successfully",
-        "token": token,
+        "message": "User ID received successfully",
+        "user_id": user_id,
         "received_data": data,
     }
-
-
-

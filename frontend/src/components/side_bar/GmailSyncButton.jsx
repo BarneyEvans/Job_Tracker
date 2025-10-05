@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { triggerSync } from "../../services/syncGmail";
+import { supabase } from "../../supabaseClient";
 
 export default function GmailSyncButton() {
   const [loading, setLoading] = useState(false);
@@ -8,7 +9,22 @@ export default function GmailSyncButton() {
   const handleSync = async () => {
     setLoading(true);
     setStatus("");
+
     try {
+      const { data: emails, error: emailError } = await supabase
+        .from("user_email")
+        .select("*")
+
+      if (emailError) throw emailError;
+      console.log(emails);
+      if (!emails || emails.length === 0) {
+        // ❌ No connected emails
+        alert("You must connect your email first.");
+        setStatus("⚠️ No connected emails");
+        return;
+      }
+
+      // ✅ Step 3: If emails exist, trigger the sync
       const result = await triggerSync();
       setStatus(`✅ ${result.message}`);
     } catch (error) {
@@ -47,6 +63,10 @@ export default function GmailSyncButton() {
           {loading ? "Syncing..." : "Sync Gmail"}
         </span>
       </button>
+
+      {status && (
+        <p className="mt-2 text-xs text-gray-500 text-center">{status}</p>
+      )}
     </div>
   );
 }

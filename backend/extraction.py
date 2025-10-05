@@ -8,7 +8,8 @@ from llm_call import send_request, format_response
 
 
 def extract_information(user_id):
-    emails = retrieve_gmails()
+    emails, latest_timestamp = retrieve_gmails(user_id)
+    print("emails: ", emails)
     necessary_data = {}
 
     for email_id in emails:
@@ -32,7 +33,7 @@ def extract_information(user_id):
                     necessary_data[email_id] = parsed_email
         except:
             continue
-    return necessary_data
+    return necessary_data, latest_timestamp
 
 
 

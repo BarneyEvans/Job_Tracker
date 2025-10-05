@@ -14,18 +14,22 @@ def get_gmail_service():
     """
     Authenticates with the Gmail API and returns a service object.
     """
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    creds_path = os.path.join(BASE_DIR, "credentials.json")
+    token_path = os.path.join(BASE_DIR, "token.json")
+
     creds = None
-    if os.path.exists('backend/token.json'):
-        creds = Credentials.from_authorized_user_file('backend/token.json', SCOPES)
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'backend/credentials.json', SCOPES)
+                creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('backend/token.json', 'w') as token:
+        with open(token_path, 'w') as token:
             token.write(creds.to_json())
     service = build('gmail', 'v1', credentials=creds)
     return service
@@ -113,13 +117,16 @@ def get_content(ids, current_service):
         email_content[id]["Date"] = get_date(current_message)
     return email_content
 
-def retrieve_gmails():
+def retrieve_gmails(user_id):
     service = get_gmail_service()
-    timestamp = read_last_timestamp()
+    print("Gmail service obtained")
+    timestamp = read_last_timestamp(user_id)
+    print("Last timestamp read:", timestamp)
     ids_for_processing, latest_timestamp = get_new_email_ids(service, timestamp)
-    write_last_timestamp(latest_timestamp)
+    # write_last_timestamp(latest_timestamp, user_id)
+    print(f"Found {len(ids_for_processing)} new emails")
     content = get_content(ids_for_processing, service)
-    return content
+    return content, latest_timestamp
 
     
 # This part is just for testing our function directly
