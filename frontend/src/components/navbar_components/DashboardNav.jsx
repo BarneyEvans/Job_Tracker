@@ -66,9 +66,6 @@ export default function DashboardNav() {
   return (
     <div className="flex top-0 right-0 z-9">
     <nav className="bg-[#FDFFFC] text-white w-full px-4 py-2 border-b-1 border-[#b7c2c5b0] min-h-14 flex items-center justify-between">
-        <div className="text-[#011627] space-x-6 hidden md:flex">
-          <h1 className="font-bold text-lg"> Dashboard</h1>
-        </div>
         {/* Middle: Search Bar */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-md">
             <input
