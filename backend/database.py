@@ -134,7 +134,6 @@ def new_calendar(data, application_id, user_id):
         
 
 def read_last_timestamp(user_id):
-    user_id = os.getenv("USER_ID")  # hardcoded for testing
     response = (
         supabase_client.table("user_email")
         .select("last_timestamp")
