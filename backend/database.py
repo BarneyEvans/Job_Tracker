@@ -12,17 +12,139 @@ url = os.getenv('SUPABASE_URL')
 key = os.getenv('SUPABASE_KEY')
 supabase_client: Client = create_client(url, key)
 
+THREADING_ENABLED = True
+
+def find_application_by_thread(thread_id):
+    if not THREADING_ENABLED or not thread_id:
+        return None
+    try:
+        resp = (
+            supabase_client.table("application_events")
+            .select("application_id")
+            .eq("gmail_thread_id", thread_id)
+            .limit(1)
+            .execute()
+        )
+        if resp.data:
+            return resp.data[0]["application_id"]
+    except Exception:
+        return None
+    return None
+
+def find_application_by_in_reply_to(in_reply_to):
+    if not THREADING_ENABLED or not in_reply_to:
+        return None
+    try:
+        resp = (
+            supabase_client.table("application_events")
+            .select("application_id")
+            .eq("gmail_message_id", in_reply_to)
+            .limit(1)
+            .execute()
+        )
+        if resp.data:
+            return resp.data[0]["application_id"]
+    except Exception:
+        return None
+    return None
+
+def event_exists_by_message_id(message_id):
+    if not THREADING_ENABLED or not message_id:
+        return False
+    try:
+        resp = (
+            supabase_client.table("application_events")
+            .select("gmail_message_id")
+            .eq("gmail_message_id", message_id)
+            .limit(1)
+            .execute()
+        )
+        return bool(resp.data)
+    except Exception:
+        return False
+
+def update_existing_application(application_id, data, user_id):
+    if (data["status"] not in STAGES or data["status"] == "unsure") and (data["substate"] not in SUBSTATES or data["substate"] == "unsure"):
+        _ = (
+            supabase_client.table("job_applications")
+            .update({"latest_date": data["date"]})
+            .eq("application_id", application_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+    elif (data["substate"] not in SUBSTATES or data["substate"] == "unsure"):
+        _ = (
+            supabase_client.table("job_applications")
+            .update({"latest_date": data["date"], "stage": data["status"]})
+            .eq("application_id", application_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+    elif (data["status"] not in STAGES or data["status"] == "unsure"):
+        _ = (
+            supabase_client.table("job_applications")
+            .update({"latest_date": data["date"], "substate": data["substate"]})
+            .eq("application_id", application_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+    else:
+        _ = (
+            supabase_client.table("job_applications")
+            .update({
+                "latest_date": data["date"],
+                "stage": data["status"],
+                "substate": data["substate"],
+            })
+            .eq("application_id", application_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+    return application_id
+
+def resolve_application_id(data, user_id):
+    thread_id = data.get("thread_id")
+    in_reply_to = data.get("in_reply_to")
+    app_id = find_application_by_thread(thread_id)
+    if app_id is None:
+        app_id = find_application_by_in_reply_to(in_reply_to)
+    if app_id is not None:
+        update_existing_application(app_id, data, user_id)
+        return app_id
+    return new_application(data, user_id)
+
 def new_email(data, application_id, user_id):
-    response = (
-        supabase_client.table("application_events")
-            .insert(
-                {
-                    "event_date": data["date"], 
-                    "application_id": application_id,
-                    "email_text": data["content"],
-                    "event_summary": data["subject"],
-                }
-            )
+    if THREADING_ENABLED and event_exists_by_message_id(data.get("message_id")):
+        return
+    event = {
+        "event_date": data["date"],
+        "application_id": application_id,
+        "email_text": data["content"],
+        "event_summary": data["subject"],
+    }
+    if THREADING_ENABLED:
+        if data.get("thread_id") is not None:
+            event["gmail_thread_id"] = data.get("thread_id")
+        if data.get("message_id") is not None:
+            event["gmail_message_id"] = data.get("message_id")
+        if data.get("in_reply_to") is not None:
+            event["in_reply_to"] = data.get("in_reply_to")
+    try:
+        _ = (
+            supabase_client.table("application_events")
+            .insert(event)
+            .execute()
+        )
+    except Exception:
+        fallback_event = {
+            "event_date": data["date"],
+            "application_id": application_id,
+            "email_text": data["content"],
+            "event_summary": data["subject"],
+        }
+        _ = (
+            supabase_client.table("application_events")
+            .insert(fallback_event)
             .execute()
         )
     
@@ -103,34 +225,36 @@ def new_calendar(data, application_id, user_id):
     if data["substate"] == "upcoming":
         prompt = get_upcoming_timings(data["content"])
         output = send_request(prompt, ollama=False)
-        
-        out_json = format_response(output)
-        parsed_email = eval(out_json)
-        if str(parsed_email["duration"]) == "-1":
-            response = (
-                supabase_client.table("calendar")
-                .insert(
-                    {
-                        "application_id": application_id, 
-                        "date": parsed_email["upcoming_date"],
-                        "time": parsed_email["time"],
-                    }
+        try: 
+            out_json = format_response(output)
+            parsed_email = eval(out_json)
+            if str(parsed_email["duration"]) == "-1":
+                response = (
+                    supabase_client.table("calendar")
+                    .insert(
+                        {
+                            "application_id": application_id, 
+                            "date": parsed_email["upcoming_date"],
+                            "time": parsed_email["time"],
+                        }
+                    )
+                    .execute()
                 )
-                .execute()
-            )
-        else:
-            response = (
-                supabase_client.table("calendar")
-                .insert(
-                    {
-                        "application_id": application_id, 
-                        "date": parsed_email["upcoming_date"],
-                        "time": parsed_email["time"],
-                        "duration": parsed_email["duration"],
-                    }
+            else:
+                response = (
+                    supabase_client.table("calendar")
+                    .insert(
+                        {
+                            "application_id": application_id, 
+                            "date": parsed_email["upcoming_date"],
+                            "time": parsed_email["time"],
+                            "duration": parsed_email["duration"],
+                        }
+                    )
+                    .execute()
                 )
-                .execute()
-            )
+        except:
+            None
         
 
 def read_last_timestamp(user_id):
@@ -154,10 +278,36 @@ def write_last_timestamp(timestamp, user_id):
         )
 
 def add_to_tables(data, user_id):
-    print("teeeeesting")
-    application_id = new_application(data, user_id)
+    application_id = resolve_application_id(data, user_id)
     new_email(data, application_id, user_id)
     new_calendar(data, application_id, user_id)
+
+
+def delete_application_records(application_id, user_id):
+    """Hard delete an application and all associated records."""
+    try:
+        existing = (
+            supabase_client.table("job_applications")
+            .select("application_id")
+            .eq("application_id", application_id)
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+    except Exception:
+        return False
+
+    if not existing.data:
+        return False
+
+    try:
+        supabase_client.table("application_events").delete().eq("application_id", application_id).execute()
+        supabase_client.table("calendar").delete().eq("application_id", application_id).execute()
+        supabase_client.table("job_applications").delete().eq("application_id", application_id).eq("user_id", user_id).execute()
+    except Exception:
+        return False
+
+    return True
 
 def add_user_to_table(data, user_id):
     response = (

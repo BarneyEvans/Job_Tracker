@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Application from "./Application";
 import Filler from "./Filler";
+import { ChevronDown } from "lucide-react";
 
-export default function StageColumn({ stageName, applications, loading }) {
+export default function StageColumn({ stageName, applications, loading, onDelete, accentColor }) {
   const [showHidden, setShowHidden] = useState(false);
 
   if (loading) {
@@ -18,8 +19,7 @@ export default function StageColumn({ stageName, applications, loading }) {
 
   // Calculate age (in days)
   const today = new Date();
-  const daysOld = (date) =>
-    Math.floor((today - new Date(date)) / (1000 * 60 * 60 * 24));
+  const daysOld = (date) => Math.floor((today - new Date(date)) / (1000 * 60 * 60 * 24));
 
   const upcomingApps = applications
     .filter((app) => app.state === upcoming && daysOld(app.date) <= 60)
@@ -39,21 +39,21 @@ export default function StageColumn({ stageName, applications, loading }) {
 
   // Hidden apps (rejected OR older than 60 days)
   const hiddenApps = applications.filter(
-    (app) =>
-      app.state === rejectedState ||
-      daysOld(app.date) > 60
+    (app) => app.state === rejectedState || daysOld(app.date) > 60
   );
 
   return (
-   <div className="flex-1 bg-[#EDF6F9] border-r border-[#b7c2c5b0] flex flex-col">
-      {/* Sticky header */}
-      <h2 className="font-bold text-xl text-center sticky top-0 bg-[#EDF6F9] z-10 m-6">
-        {stageName}
+    <div className="flex-1 bg-[#EDF6F9] border-r border-[#b7c2c5b0] flex flex-col">
+      {/* Sticky header with accent dot */}
+      <h2 className="font-semibold text-lg text-center sticky top-0 bg-[#EDF6F9] z-10 m-6">
+        <span style={{ color: accentColor || "#1f2937" }}>{stageName}</span>
       </h2>
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto px-4 pb-50 scroll-overlay"
-           style={{ maxHeight: "calc(109vh - 40px)", minHeight: "calc(100vh - 40px)"}}>
+      <div
+        className="flex-1 overflow-y-auto px-4 pb-50 scroll-overlay"
+        style={{ maxHeight: "calc(109vh - 40px)", minHeight: "calc(100vh - 40px)" }}
+      >
         {/* Upcoming */}
         {upcomingApps.map((app, index) => (
           <Application
@@ -63,6 +63,8 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isUpcoming
+            onDelete={onDelete}
+            accentColor={accentColor}
           />
         ))}
 
@@ -75,6 +77,8 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isDeadline
+            onDelete={onDelete}
+            accentColor={accentColor}
           />
         ))}
 
@@ -87,6 +91,8 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isAction
+            onDelete={onDelete}
+            accentColor={accentColor}
           />
         ))}
 
@@ -99,6 +105,8 @@ export default function StageColumn({ stageName, applications, loading }) {
             role={app.role}
             date={app.date}
             isPassive
+            onDelete={onDelete}
+            accentColor={accentColor}
           />
         ))}
 
@@ -110,16 +118,15 @@ export default function StageColumn({ stageName, applications, loading }) {
               className="flex w-full justify-between items-center text-sm text-gray-600 hover:text-gray-800"
             >
               <span>Hidden ({hiddenApps.length})</span>
-              <span
-                className={`transform transition-transform ${
-                  showHidden ? "rotate-180" : "rotate-0"
-                }`}
-              >
-                ▼
-              </span>
+              <ChevronDown
+                size={16}
+                className={`transform transition-transform ${showHidden ? "rotate-180" : "rotate-0"}`}
+              />
             </button>
 
-            {hiddenApps.length > 0 && ( <hr className="border-t border-[#b7c2c5b0] mt-2 mb-4" /> )}
+            {hiddenApps.length > 0 && (
+              <hr className="border-t border-[#b7c2c5b0] mt-2 mb-4" />
+            )}
 
             {showHidden && (
               <div className="mt-2">
@@ -131,6 +138,8 @@ export default function StageColumn({ stageName, applications, loading }) {
                     role={app.role}
                     date={app.date}
                     isRejected={app.state === rejectedState}
+                    onDelete={onDelete}
+                    accentColor={accentColor}
                   />
                 ))}
               </div>
@@ -141,7 +150,3 @@ export default function StageColumn({ stageName, applications, loading }) {
     </div>
   );
 }
-
-
-
-

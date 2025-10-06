@@ -1,4 +1,4 @@
-from database import add_to_tables, add_user_to_table, write_last_timestamp
+from database import add_to_tables, add_user_to_table, write_last_timestamp, delete_application_records
 from extraction import extract_information
 
 
@@ -18,3 +18,7 @@ def sign_up(email):
 def connect_email(payload):
     add_user_to_table(payload)
     check_updates(payload["user_id"])
+
+
+def remove_application(application_id, user_id):
+    return delete_application_records(application_id, user_id)

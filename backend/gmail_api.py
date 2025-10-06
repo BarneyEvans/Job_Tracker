@@ -35,6 +35,8 @@ def get_gmail_service():
     return service
 
 def get_new_email_ids(current_service, last_timestamp):
+    if last_timestamp is None:
+        last_timestamp = 0
     latest_timestamp = last_timestamp
     new_ids = []
     all_messages_info = current_service.users().messages().list(userId='me').execute()
@@ -64,6 +66,12 @@ def get_subject(message):
         if info["name"] == "Subject":
             return info["value"]
     return "No Subject"
+
+def _get_header_value(headers, name):
+    for h in headers:
+        if h.get("name") == name:
+            return h.get("value")
+    return None
 
 def get_body(message):
     # with open("text.json", "w", encoding="utf-8") as f:
@@ -115,6 +123,15 @@ def get_content(ids, current_service):
         email_content[id]["Content"] = get_body(current_message)
         email_content[id]["Sender_Email"] = get_sender_email(current_message)
         email_content[id]["Date"] = get_date(current_message)
+        try:
+            headers = current_message.get("payload", {}).get("headers", [])
+            email_content[id]["ThreadId"] = current_message.get("threadId")
+            email_content[id]["MessageId"] = _get_header_value(headers, "Message-ID")
+            email_content[id]["InReplyTo"] = _get_header_value(headers, "In-Reply-To")
+        except Exception:
+            email_content[id]["ThreadId"] = None
+            email_content[id]["MessageId"] = None
+            email_content[id]["InReplyTo"] = None
     return email_content
 
 def retrieve_gmails(user_id):
