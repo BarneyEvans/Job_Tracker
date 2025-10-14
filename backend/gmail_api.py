@@ -1,3 +1,4 @@
+import html
 import os.path
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -5,34 +6,99 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 import json
 import base64
-from database import read_last_timestamp, write_last_timestamp
+import webbrowser
+from database import read_last_timestamp, write_creds, read_creds
+from bs4 import BeautifulSoup
+from datetime import datetime, timezone
 
 # Define the scope for our application
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+client_id = os.getenv('CLIENT_ID')
+client_secret = os.getenv('CLIENT_SECRET')
 
-def get_gmail_service():
-    """
-    Authenticates with the Gmail API and returns a service object.
-    """
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    creds_path = os.path.join(BASE_DIR, "credentials.json")
-    token_path = os.path.join(BASE_DIR, "token.json")
+# def get_gmail_service():
+#     """
+#     Authenticates with the Gmail API and returns a service object.
+#     """
+#     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+#     creds_path = os.path.join(BASE_DIR, "credentials.json")
+#     token_path = os.path.join(BASE_DIR, "token.json")
 
-    creds = None
-    if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                creds_path, SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open(token_path, 'w') as token:
-            token.write(creds.to_json())
+#     creds = None
+#     if os.path.exists(token_path):
+#         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+#     if not creds or not creds.valid:
+#         if creds and creds.expired and creds.refresh_token:
+#             creds.refresh(Request())
+#         else:
+#             flow = InstalledAppFlow.from_client_secrets_file(
+#                 creds_path, SCOPES, redirect_uri="http://localhost:5173/")
+#             creds = flow.run_local_server(port=5173)
+#         # Save the credentials for the next run
+#         with open(token_path, 'w') as token:
+#             token.write(creds.to_json())
+#     service = build('gmail', 'v1', credentials=creds)
+#     user_info = service.users().getProfile(userId='me').execute()
+#     print("Authenticated email:", user_info['emailAddress'])
+#     return service
+
+def get_gmail_service(user_id):
+    token_data = read_creds(user_id)
+    expiry_value = token_data['expiry']
+    # Convert bigint -> ISO 8601 string (what google expects)
+    if isinstance(expiry_value, (int, float)):
+        expiry_value = datetime.fromtimestamp(expiry_value, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+    user_creds = {
+    "token": token_data['access_token'],
+    "refresh_token": token_data['refresh_token'],
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "client_id": client_id,
+    "client_secret": client_secret,
+    "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "expiry": expiry_value
+    }
+    creds = Credentials.from_authorized_user_info(user_creds, scopes=SCOPES)
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        write_creds(token_data['connected_email'], creds.token, creds.refresh_token, creds.expiry, user_id)
     service = build('gmail', 'v1', credentials=creds)
     return service
+    
+
+def connect_gmail(user_id):
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+    print("Received user_id:", user_id)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    creds_path = os.path.join(BASE_DIR, "credentials.json")
+    print("Starting OAuth flow...")
+    # redirect_url = "http://localhost:5173/oauth2callback"
+
+    flow = InstalledAppFlow.from_client_secrets_file(
+        creds_path,
+        scopes=SCOPES
+    )
+    creds = flow.run_local_server(
+        host="localhost",
+        port=8080,
+        open_browser=True
+    )
+    print("OAuth complete. Got creds.")
+
+    service = build("gmail", "v1", credentials=creds)
+    print("Built Gmail service.")
+
+    user_info = service.users().getProfile(userId="me").execute()
+    print("Got user info:", user_info)
+
+    email = user_info.get("emailAddress")
+    access_token = creds.token
+    refresh_token = creds.refresh_token
+    expiry = creds.expiry
+
+    print("Writing creds to DB...")
+    write_creds(email, access_token, refresh_token, expiry, user_id)
+    print("✅ Done!")
+
 
 def get_new_email_ids(current_service, last_timestamp):
     if last_timestamp is None:
@@ -74,30 +140,71 @@ def _get_header_value(headers, name):
     return None
 
 def get_body(message):
-    # with open("text.json", "w", encoding="utf-8") as f:
-    #     json.dump(message["payload"]["parts"], f, indent=4, ensure_ascii=False)
-    # quit()
-    for info in message["payload"]["parts"]:
-        if info["mimeType"] == "text/plain":
-            data = info["body"]["data"]
-            body = base64.urlsafe_b64decode(data)
-            return body.decode("utf-8")
-        if info["mimeType"] == "text/html":
-            data = info["body"]["data"]
-            html = base64.urlsafe_b64decode(data).decode("utf-8")
-            return html
-        if info["mimeType"] == "multipart/alternative":
-            for part in info["parts"]:
-                if part["mimeType"] == "text/plain":
-                    data = part["body"]["data"]
-                    body = base64.urlsafe_b64decode(data)
-                    return body.decode("utf-8")
-                if part["mimeType"] == "text/html":
-                    data = part["body"]["data"]
-                    html = base64.urlsafe_b64decode(data).decode("utf-8")
-                    return html
+    """Extracts all visible text from a Gmail message, preserving link text and nested elements."""
 
-    return "No Content"
+    def extract_text_from_html(html_content):
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Remove invisible elements
+        for tag in soup(["script", "style", "noscript", "meta", "head"]):
+            tag.decompose()
+
+        # Insert newlines before block-level elements for readability
+        for block in soup.find_all(["p", "div", "br", "tr", "table", "li"]):
+            block.insert_before("\n")
+
+        # Preserve the visible text from links, including nested tags
+        for a in soup.find_all("a"):
+            a.replace_with(a.get_text(" ", strip=True))
+
+        text = soup.get_text(separator="\n", strip=True)
+        return html.unescape(text)
+
+    def extract_from_parts(parts):
+        texts = []
+        for part in parts:
+            mime_type = part.get("mimeType", "")
+            body = part.get("body", {})
+            data = body.get("data")
+
+            # Recurse into nested parts
+            if "parts" in part:
+                texts.append(extract_from_parts(part["parts"]))
+
+            # Skip attachments
+            if "attachmentId" in body:
+                continue
+
+            if data:
+                decoded = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+                if mime_type == "text/plain":
+                    texts.append(decoded.strip())
+                elif mime_type == "text/html":
+                    texts.append(extract_text_from_html(decoded))
+
+        return "\n".join(t for t in texts if t)
+
+    payload = message.get("payload", {})
+    parts = payload.get("parts")
+
+    if parts:
+        text = extract_from_parts(parts)
+    else:
+        # Single-part message
+        body = payload.get("body", {}).get("data")
+        mime_type = payload.get("mimeType", "")
+        if body:
+            decoded = base64.urlsafe_b64decode(body).decode("utf-8", errors="ignore")
+            text = (
+                extract_text_from_html(decoded)
+                if mime_type == "text/html"
+                else decoded.strip()
+            )
+        else:
+            text = ""
+
+    return text.strip()
+
 
 def get_sender_email(message):
     for info in message["payload"]["headers"]:
@@ -135,12 +242,9 @@ def get_content(ids, current_service):
     return email_content
 
 def retrieve_gmails(user_id):
-    service = get_gmail_service()
-    print("Gmail service obtained")
+    service = get_gmail_service(user_id)
     timestamp = read_last_timestamp(user_id)
-    print("Last timestamp read:", timestamp)
     ids_for_processing, latest_timestamp = get_new_email_ids(service, timestamp)
-    # write_last_timestamp(latest_timestamp, user_id)
     print(f"Found {len(ids_for_processing)} new emails")
     content = get_content(ids_for_processing, service)
     return content, latest_timestamp

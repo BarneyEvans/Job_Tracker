@@ -49,9 +49,10 @@ export default function EventTimeline({ applicationId }) {
             ✕
           </button>
           <h2 className="font-bold text-lg mb-4">Email</h2>
-          <div className="whitespace-pre-wrap text-sm text-gray-800">
-            {selectedEmail}
-          </div>
+          <div
+            className="whitespace-pre-wrap text-sm text-gray-800"
+            dangerouslySetInnerHTML={{ __html: selectedEmail }}
+          />
         </div>
       )}
     </div>

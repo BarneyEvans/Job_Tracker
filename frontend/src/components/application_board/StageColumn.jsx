@@ -51,7 +51,7 @@ export default function StageColumn({ stageName, applications, loading, onDelete
 
       {/* Scrollable content area */}
       <div
-        className="flex-1 overflow-y-auto px-4 pb-50 scroll-overlay"
+        className="flex-1 overflow-y-auto px-4 pb-30 scroll-overlay"
         style={{ maxHeight: "calc(109vh - 40px)", minHeight: "calc(100vh - 40px)" }}
       >
         {/* Upcoming */}

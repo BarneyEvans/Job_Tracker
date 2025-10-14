@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,7 +23,7 @@ export default function Login() {
       setMessage(error.message);
     } else {
       setMessage("✅ Successfully logged in!");
-      // Optionally redirect after login
+      navigate("/dashboard");
     }
 
     setLoading(false);

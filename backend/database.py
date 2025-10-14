@@ -14,6 +14,17 @@ supabase_client: Client = create_client(url, key)
 
 THREADING_ENABLED = True
 
+def fetch_companies(user_id):
+    response = (
+        supabase_client.table("job_applications")
+        .select("company")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    companies = [row["company"] for row in response.data]
+    print("Fetched companies:", companies)
+    return companies
+
 def find_application_by_thread(thread_id):
     if not THREADING_ENABLED or not thread_id:
         return None
@@ -113,7 +124,7 @@ def resolve_application_id(data, user_id):
         return app_id
     return new_application(data, user_id)
 
-def new_email(data, application_id, user_id):
+def new_email(data, application_id):
     if THREADING_ENABLED and event_exists_by_message_id(data.get("message_id")):
         return
     event = {
@@ -276,10 +287,45 @@ def write_last_timestamp(timestamp, user_id):
             .eq("user_id", user_id)
             .execute()
         )
+    
+def write_creds(email, access_token, refresh_token, expiry, user_id):
+    expiry = expiry.isoformat()
+    # Convert ISO string (e.g. "2025-10-14T14:21:32") → UNIX timestamp integer
+    if isinstance(expiry, str):
+        try:
+            expiry = int(datetime.fromisoformat(expiry).timestamp())
+        except ValueError:
+            pass  # keep as is if already numeric or None
+
+    data = {
+        "user_id": user_id,
+        "connected_email": email,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expiry": expiry,
+    }
+
+    response = (
+        supabase_client.table("user_email")
+        .upsert(data, on_conflict=["user_id", "connected_email"])
+        .execute()
+    )
+    
+def read_creds(user_id):
+    response = (
+        supabase_client.table("user_email")
+        .select("connected_email, access_token, refresh_token, expiry")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    if not response.data or len(response.data) == 0:
+        return None  # or some default value
+
+    return response.data[0]
 
 def add_to_tables(data, user_id):
     application_id = resolve_application_id(data, user_id)
-    new_email(data, application_id, user_id)
+    new_email(data, application_id)
     new_calendar(data, application_id, user_id)
 
 

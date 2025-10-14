@@ -27,6 +27,7 @@ export default function GmailSyncButton() {
       // ✅ Step 3: If emails exist, trigger the sync
       const result = await triggerSync();
       setStatus(`✅ ${result.message}`);
+      window.location.reload();
     } catch (error) {
       console.error("Sync failed:", error);
       setStatus("❌ Sync failed — check console");

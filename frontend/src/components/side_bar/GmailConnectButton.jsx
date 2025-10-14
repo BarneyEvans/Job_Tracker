@@ -1,23 +1,16 @@
 import { supabase } from "../../supabaseClient";
+import { triggerConnect } from "../../services/connectGmail";
 
-export default function GmailSyncButton() {
-  const handleSync = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        scopes: "https://www.googleapis.com/auth/gmail.readonly",
-        // Optional: redirect after login
-        // redirectTo: window.location.origin + "/gmail-callback",
-      },
-    });
-
-    if (error) console.error("Error syncing Gmail:", error.message);
-  };
+export default function GmailSyncButton({ onSuccess }) {
+  const handleConnect = async () => {
+    await triggerConnect();
+    onSuccess?.();
+  }
 
   return (
     <button
       type="button"
-      onClick={handleSync}
+      onClick={handleConnect}
       className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition"
     >
       <svg

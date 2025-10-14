@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 
-export async function triggerSync() {
+export async function triggerConnect() {
   // Get the current logged-in user's ID
   const {
     data: { user },
@@ -17,7 +17,7 @@ export async function triggerSync() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      message: "sync_gmail",
+      message: "connect_gmail",
       user_id: user.id, // send the user ID instead of the token
     }),
   });
@@ -30,4 +30,3 @@ export async function triggerSync() {
   console.log("triggerSync result:", result);
   return result;
 }
-

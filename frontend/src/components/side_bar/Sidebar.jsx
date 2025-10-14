@@ -1,12 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef} from "react";
 import { supabase } from "../../supabaseClient";
 import GmailConnectButton from "./GmailConnectButton";
 import GmailSyncButton from "./GmailSyncButton";
+import ConnectedEmailsList from "./ConnectedEmailsList";
 
 export default function Sidebar() {
     const [user, setUser] = useState(null);
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+    const emailsRef = useRef();
     
     useEffect(() => {
       const fetchUser = async () => {
@@ -124,38 +126,45 @@ export default function Sidebar() {
               Account
             </NavLink>
             {isOverlayOpen && (
-              <>
-                {/* Subtle dimming layer */}
-                <div
-                  className="fixed inset-0 z-40"
-                  style={{ backgroundColor: "rgba(0,0,0,0.1)" }} // 10% black
-                  onClick={handleOverlayToggle} // click outside to close
-                />
+                <>
+                  {/* Dim layer */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    style={{ backgroundColor: "rgba(0,0,0,0.1)" }}
+                    onClick={handleOverlayToggle}
+                  />
 
-                {/* Modal content */}
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                  <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                    
-                    {/* Cross button top-right */}
-                    <button
-                      className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold"
-                      onClick={handleOverlayToggle}
-                    >
-                      &times;
-                    </button>
+                  {/* Modal */}
+                  <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                      <button
+                        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold"
+                        onClick={handleOverlayToggle}
+                      >
+                        &times;
+                      </button>
 
-                    {/* Modal text */}
-                    <h2 className="text-xl font-bold mb-2">Gmail Connections</h2>
-                    <p className="mb-4 text-gray-700">
-                      You may connect multiple Gmail accounts to VestigoJobs. Currently, we're only compatible with Gmail - so if you do not have an account please create a new Gmail account and come back.
-                    </p>
+                      <h2 className="text-xl font-bold mb-2">Gmail Connections</h2>
+                      <p className="mb-4 text-gray-700">
+                        You may connect multiple Gmail accounts to VestigoJobs. Currently, we're only compatible with Gmail.
+                      </p>
 
-                    {/* Gmail Sync Button */}
-                    <GmailConnectButton />
+                      {/* List of connected emails */}
+                      <ConnectedEmailsList ref={emailsRef} userId={user?.id} />
+                      
+                      {/* Connect new Gmail button */}
+                      <div className="mt-4">
+                        <GmailConnectButton
+                          onSuccess={() => {
+                            // directly tell ConnectedEmailsList to refetch
+                            emailsRef.current?.refetchEmails();
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
 
             </>
           )}

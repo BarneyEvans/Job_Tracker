@@ -42,7 +42,7 @@ export default function DashboardNav() {
       .or(
         `job_title.ilike.%${searchQuery}%,company.ilike.%${searchQuery}%`
       ) // search both job_title and company
-      .eq("user", user.id)
+      .eq("user_id", user.id)
       .limit(5); // limit results for dropdown
 
 
@@ -78,7 +78,7 @@ export default function DashboardNav() {
               onBlur={() => setTimeout(() => setShowDropdown(false), 150)} // delay to allow click
             />
             {showDropdown && searchResults.length > 0 && (
-              <ul className="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-md">
+              <ul className="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-80 overflow-y-auto shadow-md">
                 {searchResults.map((app) => (
                   <li
                     key={app.application_id}

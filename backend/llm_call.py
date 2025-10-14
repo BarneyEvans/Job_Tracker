@@ -20,7 +20,7 @@ def send_request(prompt, ollama=False):
         api_key = os.getenv('CHATGPT_API_KEY')
         client = OpenAI(api_key=api_key)
         response = client.responses.create(
-            model="gpt-5-nano",
+            model="gpt-5",
             input=prompt,
             # temperature=0.0,
             service_tier="flex",

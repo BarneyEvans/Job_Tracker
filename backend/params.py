@@ -21,7 +21,7 @@ def generate_classification_prompt(email_s, email_b):
     The second category (UNSURE) is for emails that are job related but it's unclear what stage of the application process they pertain to.
     The other categories are for various stages of a job application process.
 
-    Valid categories: {STATES}
+    Valid categories: {STAGES}
     Your response must be a single category from the list and nothing more, only the category.
 
     --- EMAIL CONTENT ---
@@ -71,13 +71,15 @@ def generate_checking_prompt(new_job_details, existing_jobs_list_as_string):
     """
     return prompt
 
-def data_extraction_prompt(email_subject, email_body):
+def data_extraction_prompt(current_companies, email_subject, email_body):
     prompt = f"""
     You are a highly specialized information extraction agent, tasked to extract the relevant information from an email.
-
+    First you must figure out if the email is relevant to a job application. If it is not relevant then you must return nothing (no characters). Please ignore emails that are suggesting I apply from jobs websites like LinkedIn and Indeed.
+    These are the companies I have already started an application with or applied to: {', '.join(current_companies)}. Companies might have slightly differing names in the email (e.g. "Google" might be "Google LLC" or "Google Inc.") so please use your judgement and stay consistent.
+    
     There are 5 key pieces of information that you are required to gather. These are as follows:
 
-    company_name: This is the name of the company that the email is coming from. (e.g. Samsung, Meta, BlackRock)
+    company_name: This is the name of the company that the job application is for. (e.g. Samsung, Meta, BlackRock) This is often the sender of the email but not always in the cases of recruitment agencies or job websites confirming an application has been recieved. 
     job_name: This is the name of the job that has been applied for and the email is referencing. (e.g. Software Engineer, Data Scientist, Quant Analyst)
     status: This is the stage of the job application. Please select the most suitable item from this list {STAGES}. (e.g. "Please schedule a meeting time" is "action_required"). Only use "irrelevant if the email has no possiblibility of filing under any other item in the list.
     substate: This is the outcome from the user so far. Please select the most suitable item from this list {SUBSTATES}. (e.g. "Unfortunately we have gone with other candidates" would be "rejected")
@@ -103,6 +105,7 @@ def data_extraction_prompt(email_subject, email_body):
     Subject: {email_subject}
     Body: {email_body}
     ---
+
 
     If 'status' is irrelevant, please return nothing (no characters), otherwise, please return your response as a json in the following format:
     {{

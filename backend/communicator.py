@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from main import check_updates, remove_application
+from gmail_api import connect_gmail
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ async def receive_data(request: Request):
     """
     data = await request.json()
     user_id = data.get("user_id")
+    message = data.get("message")
 
     if not user_id:
         raise HTTPException(status_code=400, detail="Missing user_id in request body")
@@ -29,7 +31,11 @@ async def receive_data(request: Request):
     print("Received user_id:", user_id)
 
     # Call your backend function with user_id instead of token
-    check_updates(user_id)
+    if message == "sync_gmail":
+        check_updates(user_id)
+    if message == "connect_gmail":
+        print("Hello")
+        print(connect_gmail(user_id))
 
     return {
         "message": "User ID received successfully",
