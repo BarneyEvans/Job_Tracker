@@ -17,7 +17,6 @@ def extract_information(user_id):
     for email_id in emails:
         email_subject = emails[email_id]["Subject"]
         email_content = emails[email_id]["Content"]
-        print("Email content", email_content)
         prompt = data_extraction_prompt(current_companies, email_subject, email_content)
         print("Prompt generated successfully")
         output = send_request(prompt, ollama=False)

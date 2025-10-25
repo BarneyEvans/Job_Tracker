@@ -105,25 +105,34 @@ def get_new_email_ids(current_service, last_timestamp):
         last_timestamp = 0
     latest_timestamp = last_timestamp
     new_ids = []
+    
+    # Fetch all message IDs
     all_messages_info = current_service.users().messages().list(userId='me').execute()
+    
     messages = []
     for msg in all_messages_info.get('messages', []):
         msg_detail = current_service.users().messages().get(
             userId='me',
             id=msg['id'],
-            format='metadata'   # faster than 'full' since you just need metadata
+            format='metadata'  # faster than 'full' since we just need metadata
         ).execute()
         
         messages.append({
             "id": msg['id'],
             "timestamp": int(msg_detail['internalDate'])  # in ms since epoch
         })
+
+    # Sort messages by timestamp (ascending)
+    messages.sort(key=lambda m: m["timestamp"])
+
+    # Collect new IDs in chronological order
     for msg in messages:
         if msg["timestamp"] > last_timestamp:
             new_ids.append(msg["id"])
-            if msg["timestamp"] > latest_timestamp:
-                latest_timestamp = msg["timestamp"]
+            latest_timestamp = max(latest_timestamp, msg["timestamp"])
+    new_ids.reverse()
     return new_ids, latest_timestamp
+
 
 
 
@@ -245,6 +254,7 @@ def retrieve_gmails(user_id):
     service = get_gmail_service(user_id)
     timestamp = read_last_timestamp(user_id)
     ids_for_processing, latest_timestamp = get_new_email_ids(service, timestamp)
+    print("Latest timestamp:", latest_timestamp)
     print(f"Found {len(ids_for_processing)} new emails")
     content = get_content(ids_for_processing, service)
     return content, latest_timestamp

@@ -143,7 +143,7 @@ def new_email(data, application_id):
     try:
         _ = (
             supabase_client.table("application_events")
-            .insert(event)
+            .upsert(event, on_conflict=["event_date"])
             .execute()
         )
     except Exception:
@@ -155,7 +155,7 @@ def new_email(data, application_id):
         }
         _ = (
             supabase_client.table("application_events")
-            .insert(fallback_event)
+            .upsert(fallback_event, on_conflict=["event_date"])
             .execute()
         )
     

@@ -34,8 +34,7 @@ async def receive_data(request: Request):
     if message == "sync_gmail":
         check_updates(user_id)
     if message == "connect_gmail":
-        print("Hello")
-        print(connect_gmail(user_id))
+        connect_gmail(user_id)
 
     return {
         "message": "User ID received successfully",

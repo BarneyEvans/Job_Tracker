@@ -5,7 +5,7 @@ MODEL_NAME = POSSIBLE_MODELS[5]
 OLLAMA_ENDPOINT = "http://localhost:11434/api/generate"
 
 #States for the prompt:
-STAGES = ["irrelevant", "unsure","awaiting_response", "applied", "assessment", "interview"]
+STAGES = ["irrelevant", "unsure","action_required", "applied", "assessment", "interview"]
 
 SUBSTATES = ["rejected", "accepted", "completed", "awaiting_response", "applied", "upcoming", "deadline"]
 
@@ -76,7 +76,7 @@ def data_extraction_prompt(current_companies, email_subject, email_body):
     You are a highly specialized information extraction agent, tasked to extract the relevant information from an email.
     First you must figure out if the email is relevant to a job application. If it is not relevant then you must return nothing (no characters). Please ignore emails that are suggesting I apply from jobs websites like LinkedIn and Indeed.
     These are the companies I have already started an application with or applied to: {', '.join(current_companies)}. Companies might have slightly differing names in the email (e.g. "Google" might be "Google LLC" or "Google Inc.") so please use your judgement and stay consistent.
-    
+    If an email says that I have recieved a message (on Indeed or LinkedIn for example) then this likely means action is required so please classify it as such.
     There are 5 key pieces of information that you are required to gather. These are as follows:
 
     company_name: This is the name of the company that the job application is for. (e.g. Samsung, Meta, BlackRock) This is often the sender of the email but not always in the cases of recruitment agencies or job websites confirming an application has been recieved. 
