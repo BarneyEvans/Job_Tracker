@@ -5,9 +5,7 @@ from extraction import extract_information
 
 def check_updates(user_id):
     processed_emails, latest_timestamp = extract_information(user_id)
-    print("Processed email keys", processed_emails.keys())
     reversed_keys = list(processed_emails.keys())[::-1]
-    print("Reversed keys", reversed_keys)
     for email_id in reversed_keys:
         print(f"Adding {processed_emails[email_id]['company']} to table")
         add_to_tables(processed_emails[email_id], user_id)
